@@ -19,6 +19,7 @@ import pathlib
 import re
 import sys
 import time
+import urllib.parse
 import urllib.request
 from zoneinfo import ZoneInfo
 
@@ -107,6 +108,10 @@ def from_eventbrite(r):
             and "Greater London" not in [l.get("name") for l in r.get("locations", [])]:
         return None
     url = r.get("url") or ""
+    try:
+        lat, lng = round(float(addr["latitude"]), 6), round(float(addr["longitude"]), 6)
+    except (KeyError, TypeError, ValueError):
+        lat = lng = None
     return {
         "id": "eb-" + str(r.get("id")),
         "title": title,
@@ -118,6 +123,8 @@ def from_eventbrite(r):
         "area": area,
         "address": clean(", ".join(x for x in [addr.get("address_1"), addr.get("postal_code")] if x)),
         "online": online,
+        "lat": None if online else lat,
+        "lng": None if online else lng,
         "category": categorize(f"{title} {summary} {tags}"),
         "summary": summary[:280],
         "url": canonical_url(url),
@@ -149,6 +156,62 @@ def scrape_eventbrite():
     return list(found.values())
 
 
+POSTCODE = re.compile(r"\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b", re.I)
+
+
+def geocode_postcodes(postcodes):
+    """Look up postcodes on postcodes.io (free, no key). Returns {postcode: (lat, lng)}."""
+    out, todo = {}, sorted(set(postcodes))
+    for i in range(0, len(todo), 100):
+        body = json.dumps({"postcodes": todo[i:i + 100]}).encode()
+        req = urllib.request.Request("https://api.postcodes.io/postcodes", data=body,
+                                     headers={"Content-Type": "application/json", "User-Agent": UA})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                for item in json.load(r).get("result", []):
+                    res = item.get("result")
+                    if res:
+                        out[item["query"]] = (round(res["latitude"], 6), round(res["longitude"], 6))
+        except Exception as e:
+            print(f"  ! postcodes.io: {e}", file=sys.stderr)
+    # Retired postcodes (common for big institutions) still resolve through the terminated-postcodes API.
+    for pc in todo:
+        if pc in out:
+            continue
+        try:
+            url = "https://api.postcodes.io/terminated_postcodes/" + urllib.parse.quote(pc)
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": UA}), timeout=30) as r:
+                res = json.load(r).get("result") or {}
+            if res.get("latitude") is not None:
+                out[pc] = (round(res["latitude"], 6), round(res["longitude"], 6))
+        except Exception:
+            print(f"  ! postcode not found: {pc}", file=sys.stderr)
+    return out
+
+
+def add_coordinates(curated, scraped):
+    """Give curated events a lat/lng: explicit values win, then a scraped event at the same venue, then the postcode."""
+    by_venue = {e["venue"].lower(): (e["lat"], e["lng"]) for e in scraped if e.get("lat") is not None}
+    need_pc = {}
+    for ev in curated:
+        if ev.get("online") or ev.get("lat") is not None:
+            continue
+        hit = by_venue.get((ev.get("venue") or "").lower())
+        if hit:
+            ev["lat"], ev["lng"] = hit
+            continue
+        m = POSTCODE.search(ev.get("address") or "")
+        if m:
+            need_pc[ev["id"]] = m.group(1).upper()
+    found = geocode_postcodes(need_pc.values()) if need_pc else {}
+    for ev in curated:
+        pc = need_pc.get(ev["id"])
+        if pc in found:
+            ev["lat"], ev["lng"] = found[pc]
+        ev.setdefault("lat", None)
+        ev.setdefault("lng", None)
+
+
 def norm_title(t):
     return re.sub(r"[^a-z0-9ğüşöçı]+", "", t.lower())[:40]
 
@@ -170,6 +233,8 @@ def main():
         ev.setdefault("source", "Curated")
         ev.setdefault("online", False)
         ev.setdefault("category", categorize(f"{ev['title']} {ev.get('summary', '')}"))
+
+    add_coordinates(curated, scraped)
 
     # Curated first so hand-checked details win over scraped duplicates.
     merged, seen_keys = [], set()

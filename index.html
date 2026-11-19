@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Turkish Events London</title>
   <meta name="description" content="Turkish events in London, updated every morning: concerts, parties, talks, workshops, exhibitions, meetups and community events.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,8 +27,10 @@
         <div class="seg" role="tablist" aria-label="View">
           <button role="tab" data-view="list" aria-selected="true">List</button>
           <button role="tab" data-view="calendar" aria-selected="false">Calendar</button>
+          <button role="tab" data-view="map" aria-selected="false">Map</button>
         </div>
       </div>
+      <div id="when" class="chips when-row" aria-label="Filter by date"></div>
       <div id="chips" class="chips" aria-label="Filter by category"></div>
     </div>
   </header>
@@ -43,6 +47,10 @@
       <div class="cal-grid" id="calGrid"></div>
       <div id="dayList" class="day-list"></div>
     </section>
+    <section id="mapView" hidden>
+      <p id="mapNote" class="map-note"></p>
+      <div id="map" role="region" aria-label="Map of events"></div>
+    </section>
   </main>
 
   <footer class="wrap foot">
@@ -50,6 +58,8 @@
     <a href="data/events.json">Raw data (JSON)</a></p>
   </footer>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
   <script src="data/events.js"></script>
   <script src="app.js"></script>
 </body>
