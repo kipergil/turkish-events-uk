@@ -132,8 +132,12 @@ def from_eventbrite(r):
     }
 
 
+class EventbriteUnavailable(RuntimeError):
+    pass
+
+
 def scrape_eventbrite():
-    found = {}
+    found, pages_ok = {}, 0
     for term in SEARCH_TERMS:
         for page in range(1, PAGES_PER_TERM + 1):
             url = f"https://www.eventbrite.co.uk/d/united-kingdom--london/{term}/?page={page}"
@@ -142,6 +146,10 @@ def scrape_eventbrite():
             except Exception as e:  # keep going: one bad page shouldn't sink the run
                 print(f"  ! {url}: {e}", file=sys.stderr)
                 break
+            if data is None:
+                print(f"  ! {url}: no event data in page", file=sys.stderr)
+                break
+            pages_ok += 1
             results = (((data or {}).get("search_data") or {}).get("events") or {}).get("results") or []
             kept = 0
             for r in results:
@@ -153,6 +161,10 @@ def scrape_eventbrite():
             if not results or kept == 0:
                 break  # later pages only get less relevant
             time.sleep(1)
+    if pages_ok == 0:
+        # Every request failed (e.g. Eventbrite blocking this network). Writing a feed now would
+        # silently drop every Eventbrite event from the site, so stop instead.
+        raise EventbriteUnavailable("no Eventbrite search page could be loaded")
     return list(found.values())
 
 
@@ -219,7 +231,11 @@ def norm_title(t):
 def main():
     today = dt.datetime.now(LONDON).date().isoformat()
     print("Eventbrite:")
-    scraped = scrape_eventbrite()
+    try:
+        scraped = scrape_eventbrite()
+    except EventbriteUnavailable as e:
+        print(f"ERROR: {e}. Feed left unchanged.", file=sys.stderr)
+        sys.exit(3)
 
     # data/excluded.json: ids or URLs of scraped events judged not Turkish enough.
     excluded_path = DATA / "excluded.json"
