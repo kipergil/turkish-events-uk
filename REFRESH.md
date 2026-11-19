@@ -66,6 +66,12 @@ Work through every group below. Within a group, check the sources that are most 
 - Luma, for example Turks in Tech UK and Turkish Builders
 - Meetup.com Turkish groups in London
 
+### Aggregators and concert listings
+
+- TurkishAgenda (turkishagenda.co.uk/events). Its dates have no year, so check the weekday matches before you trust the year.
+- Turkish-language London press: Avrupa Gazete, Londra Gazete, Olay Gazete, Eurovizyon. Look for concert round-ups such as "Londra'da konser takvimi".
+- Touring Turkish artists: search Songkick, Ents24 and Bandsintown for "London" plus the artist, and check AXS, Ticketmaster and eventurk.com.
+
 ### Ticket sites
 
 - Dice, Skiddle, Fatsoma, Ticket Tailor, Humanitix, Resident Advisor, Biletix and Passo (Turkish tours abroad). Search for "Turkish", "Türk", "Türkçe", "meyhane", "Anatolian", "Londra".
