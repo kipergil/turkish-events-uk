@@ -28,7 +28,10 @@ A static site that lists Turkish events in London: concerts, parties, meyhane ni
 python3 scripts/update_events.py
 ```
 
-A scheduled Claude task runs [REFRESH.md](REFRESH.md) every morning. It runs the scraper, searches other sources for new events, and commits the updated data.
+The data is refreshed twice every morning. Each refresh pushes to `main`, and Vercel redeploys the site on every push.
+
+1. **05:17 UTC, GitHub Actions** ([`.github/workflows/daily-scrape.yml`](.github/workflows/daily-scrape.yml)): runs the Eventbrite scraper and commits the feed. It is free, needs no keys, and keeps the site current even if the other refresh fails. You can also run it from the repo's Actions tab with **Run workflow**.
+2. **06:47 London, scheduled Claude task:** follows [REFRESH.md](REFRESH.md). It runs the scraper, searches other sources (Yunus Emre Institute, Anglo-Turkish Society, community press, venues and more) for new events, adds them to `data/curated.json`, and commits.
 
 ## Preview
 
