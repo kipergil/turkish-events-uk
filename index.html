@@ -4,25 +4,34 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Turkish Events London</title>
-  <meta name="description" content="Turkish events in London, updated every morning: concerts, parties, talks, workshops, exhibitions, meetups and community events.">
+  <meta name="description" content="Turkish events in London, updated every morning: concerts, meyhane nights, talks, workshops, exhibitions, meetups and community events.">
+  <meta name="theme-color" content="#2348B8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="top">
+  <a class="skip" href="#results">Skip to events</a>
+
+  <header class="masthead">
+    <div class="lattice" aria-hidden="true"></div>
+    <div class="wrap masthead-inner">
+      <h1>Turkish events<br>in London</h1>
+      <p class="lede">Concerts, meyhane nights, talks, workshops and exhibitions, gathered every morning. <span lang="tr">Londra'daki Türk etkinlikleri.</span></p>
+      <p class="updated" id="updated"></p>
+    </div>
+  </header>
+
+  <div class="controls">
     <div class="wrap">
-      <div class="brand">
-        <span class="mark" aria-hidden="true">☾</span>
-        <div>
-          <h1>Turkish Events London</h1>
-          <p class="sub">Londra'daki Türk etkinlikleri · <span id="updated">updated daily</span></p>
-        </div>
-      </div>
       <div class="toolbar">
         <label class="search">
           <span class="sr">Search events</span>
-          <input id="q" type="search" placeholder="Search events, venues, areas…" autocomplete="off">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Zm5.3-2.2L21 21"/></svg>
+          <input id="q" type="search" placeholder="Search by event, venue or area" autocomplete="off">
         </label>
         <div class="seg" role="tablist" aria-label="View">
           <button role="tab" data-view="list" aria-selected="true">List</button>
@@ -30,19 +39,24 @@
           <button role="tab" data-view="map" aria-selected="false">Map</button>
         </div>
       </div>
-      <div id="when" class="chips when-row" aria-label="Filter by date"></div>
-      <div id="chips" class="chips" aria-label="Filter by category"></div>
+      <div class="filters">
+        <div id="when" class="chips" role="group" aria-label="When"></div>
+        <div id="chips" class="chips cats" role="group" aria-label="Type of event"></div>
+      </div>
     </div>
-  </header>
+  </div>
 
-  <main class="wrap">
+  <main class="wrap" id="results" tabindex="-1">
+    <p class="sr" id="status" aria-live="polite"></p>
     <section id="listView"></section>
     <section id="calView" hidden>
       <div class="cal-head">
-        <button class="nav" id="prevMonth" aria-label="Previous month">‹</button>
         <h2 id="monthLabel"></h2>
-        <button class="nav" id="nextMonth" aria-label="Next month">›</button>
-        <button class="today-btn" id="todayBtn">Today</button>
+        <div class="cal-nav">
+          <button class="icon-btn" id="prevMonth" aria-label="Previous month"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m15 6-6 6 6 6"/></svg></button>
+          <button class="text-btn" id="todayBtn">Today</button>
+          <button class="icon-btn" id="nextMonth" aria-label="Next month"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m9 6 6 6-6 6"/></svg></button>
+        </div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
       <div id="dayList" class="day-list"></div>
@@ -53,9 +67,11 @@
     </section>
   </main>
 
-  <footer class="wrap foot">
-    <p>Collected every morning from Eventbrite, the Yunus Emre Institute, the Anglo-Turkish Society, Cornucopia, LSE, museums and community pages. Always check the organiser's page before you go.
-    <a href="data/events.json">Raw data (JSON)</a></p>
+  <footer class="foot">
+    <div class="wrap">
+      <p>Gathered every morning from Eventbrite, the Yunus Emre Institute, the Anglo-Turkish Society, Cornucopia, LSE, museums and community listings. Times and tickets can change, so check the organiser's page before you go.</p>
+      <p><a href="data/events.json">Download the data (JSON)</a></p>
+    </div>
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>

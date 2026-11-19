@@ -14,6 +14,17 @@
   const fmtDay = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
   const fmtShort = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
   const fmtMonth = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" });
+  const fmtWeekday = new Intl.DateTimeFormat("en-GB", { weekday: "long" });
+  const fmtMonthName = new Intl.DateTimeFormat("en-GB", { month: "long" });
+  const fmtLong = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" });
+
+  // Category dots take their colour from the palette in style.css.
+  const CAT_VAR = {
+    Music: "music", Party: "party", Talk: "talk", Workshop: "workshop", Exhibition: "exhibition", Film: "film",
+    Business: "business", Festival: "festival", Community: "community", "Food & drink": "food",
+    "Comedy & theatre": "comedy", Culture: "culture",
+  };
+  const dot = (cat) => `<span class="dot" style="--c: var(--c-${CAT_VAR[cat] || "culture"})" aria-hidden="true"></span>`;
 
   const state = { q: "", cat: "All", when: "any", view: "list", month: new Date(today.getFullYear(), today.getMonth(), 1), sel: todayIso };
 
@@ -50,7 +61,7 @@
     events = (feed.events || []).filter((e) => (e.end || e.start) >= todayIso);
     if (feed.updated) {
       const u = new Date(feed.updated);
-      $("#updated").textContent = "updated " + u.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+      $("#updated").textContent = `Updated ${fmtLong.format(u)} at ${u.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
     }
   }
 
@@ -70,7 +81,7 @@
     const base = filtered(["when"]);
     $("#when").innerHTML = WHEN.map((w) => {
       const n = w.range ? base.filter((e) => inRange(e, w.range().map(iso))).length : base.length;
-      return `<button class="chip when" aria-pressed="${w.id === state.when}" data-when="${w.id}"${w.hint ? ` title="${w.hint}"` : ""}>${esc(w.label)}<span class="n">${n}</span></button>`;
+      return `<button class="chip" aria-pressed="${w.id === state.when}" data-when="${w.id}"${w.hint ? ` title="${w.hint}"` : ""}>${esc(w.label)}<span class="n">${n}</span></button>`;
     }).join("");
   }
 
@@ -81,7 +92,7 @@
     const cats = ["All", ...Object.keys(counts).sort((a, b) => counts[b] - counts[a])];
     if (state.cat !== "All" && !counts[state.cat]) cats.push(state.cat); // keep the active chip visible at 0
     $("#chips").innerHTML = cats.map((c) =>
-      `<button class="chip" aria-pressed="${c === state.cat}" data-cat="${esc(c)}">${esc(c)}<span class="n">${c === "All" ? base.length : counts[c] || 0}</span></button>`
+      `<button class="chip" aria-pressed="${c === state.cat}" data-cat="${esc(c)}">${c === "All" ? "All types" : dot(c) + esc(c)}<span class="n">${c === "All" ? base.length : counts[c] || 0}</span></button>`
     ).join("");
   }
 
@@ -116,32 +127,51 @@
 
   function whenText(e) {
     if (spanDays(e) >= 2) return `${fmtShort.format(parse(e.start))} – ${fmtShort.format(parse(e.end))}`;
-    return `${fmtDay.format(parse(e.start))}${e.time ? " · " + e.time : ""}${e.endTime ? "–" + e.endTime : ""}`;
+    return `${fmtDay.format(parse(e.start))}${e.time ? ", " + e.time : ""}${e.endTime ? "–" + e.endTime : ""}`;
   }
 
-  function card(e) {
+  const CAL_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></g></svg>';
+  const MAP_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-6.2-6.5-11.3a6.5 6.5 0 0 1 13 0C18.5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.7" r="2.3"/></g></svg>';
+
+  const place = (e) => (e.online ? "Online" : [e.venue, e.area].filter(Boolean).join(", "));
+
+  function actions(e) {
+    return `<div class="ev-actions">
+      <a class="icon-btn" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" title="Add to Google Calendar" aria-label="Add ${esc(e.title)} to Google Calendar">${CAL_SVG}</a>
+      ${hasPlace(e) ? `<a class="icon-btn" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open venue in Google Maps" aria-label="Open ${esc(e.venue || "venue")} in Google Maps">${MAP_SVG}</a>` : ""}
+    </div>`;
+  }
+
+  // One event in the agenda: time, then what/where, then quiet icon actions. The title is the link.
+  function row(e) {
     const long = spanDays(e) >= 2;
-    const when = long
-      ? `<div class="t">${e.start <= todayIso ? "Now" : esc(fmtShort.format(parse(e.start)))}</div><div class="t2">until ${esc(fmtShort.format(parse(e.end)))}</div>`
-      : `<div class="t">${esc(e.time || "All day")}</div>${e.endTime ? `<div class="t2">– ${esc(e.endTime)}</div>` : ""}`;
-    const place = [e.venue, e.area].filter(Boolean).join(" · ");
-    const placeHtml = hasPlace(e)
-      ? `<a class="venue-link" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open in Google Maps">${PIN_SVG}${esc(place)}</a>`
-      : esc(place);
-    return `<article class="card">
-      <div class="when">${when}</div>
-      <div class="body">
-        <h3 class="title">${esc(e.title)}</h3>
-        <div class="meta">${placeHtml}</div>
-        ${e.summary ? `<div class="summary">${esc(e.summary)}</div>` : ""}
-        <div class="tags"><span class="pill cat">${esc(e.category)}</span>${e.online ? '<span class="pill">Online</span>' : ""}<span class="pill">${esc(e.source || "")}</span></div>
+    const time = long
+      ? `<b>Until</b><span>${esc(fmtShort.format(parse(e.end)))}</span>`
+      : `<b>${esc(e.time || "All day")}</b>${e.endTime ? `<span>to ${esc(e.endTime)}</span>` : ""}`;
+    const title = e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title);
+    const where = hasPlace(e)
+      ? `<a href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener">${esc(place(e))}</a>`
+      : esc(place(e));
+    return `<article class="row">
+      <div class="time">${time}</div>
+      <div class="ev-main">
+        <h3 class="ev-title">${title}</h3>
+        ${where ? `<div class="ev-where">${where}</div>` : ""}
+        ${e.summary ? `<p class="ev-sum">${esc(e.summary)}</p>` : ""}
+        <div class="ev-tags"><span class="ev-tag">${dot(e.category)}${esc(e.category)}</span>${e.online ? '<span class="ev-tag plain">Online</span>' : ""}</div>
       </div>
-      <div class="actions">
-        ${e.url ? `<a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">Details</a>` : ""}
-        <a class="btn" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" title="Add to Google Calendar">+ Calendar</a>
-        ${hasPlace(e) ? `<a class="btn icon" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open venue in Google Maps" aria-label="Open venue in Google Maps">${PIN_SVG}</a>` : ""}
-      </div>
+      ${actions(e)}
     </article>`;
+  }
+
+  // Exhibitions and courses that are already running: compact tiles in their own strip.
+  function tile(e) {
+    const inner = `<span class="tile-until">${e.start > todayIso ? `From ${esc(fmtShort.format(parse(e.start)))} to` : "Until"} ${esc(fmtShort.format(parse(e.end)))}</span>
+      <span class="tile-title">${esc(e.title)}</span>
+      <span class="tile-where">${esc(place(e))}</span>`;
+    return e.url
+      ? `<a class="tile" href="${esc(e.url)}" target="_blank" rel="noopener">${inner}</a>`
+      : `<div class="tile">${inner}</div>`;
   }
 
   function relLabel(dIso) {
@@ -154,6 +184,20 @@
   }
 
   // ---------- list view ----------
+  function dayBlock(dIso, evs) {
+    const d = parse(dIso);
+    const rel = relLabel(dIso);
+    return `<section class="day" aria-label="${esc(fmtLong.format(d))}">
+      <div class="date">
+        <span class="date-num">${d.getDate()}</span>
+        <span class="date-day">${esc(fmtWeekday.format(d))}</span>
+        <span class="date-month">${esc(fmtMonthName.format(d))}</span>
+        ${rel ? `<span class="rel${dIso === todayIso ? " today" : ""}">${rel}</span>` : ""}
+      </div>
+      <div class="sheet">${evs.map(row).join("")}</div>
+    </section>`;
+  }
+
   function renderList() {
     const list = visible();
     if (!list.length) { $("#listView").innerHTML = emptyMessage(); return; }
@@ -165,22 +209,25 @@
     rest.forEach((e) => { if (!groups.has(e.start)) groups.set(e.start, []); groups.get(e.start).push(e); });
     let html = "";
     if (ongoing.length) {
-      const label = from === todayIso ? "On now" : "Also running";
-      html += `<div class="group"><h2>${label} <span class="rel">· exhibitions & multi-day</span></h2><div class="cards">${ongoing.map(card).join("")}</div></div>`;
+      html += `<section class="strip" aria-labelledby="strip-title">
+        <div class="strip-head">
+          <h2 class="section-title" id="strip-title">${from === todayIso ? "On now" : "Also running"}</h2>
+          <p class="section-note">Exhibitions and courses you can still catch</p>
+        </div>
+        <div class="tiles">${ongoing.map(tile).join("")}</div>
+      </section>`;
     }
-    for (const [d, evs] of groups) {
-      const rel = relLabel(d);
-      html += `<div class="group"><h2>${esc(fmtDay.format(parse(d)))}${rel ? ` <span class="rel">· ${rel}</span>` : ""}</h2><div class="cards">${evs.map(card).join("")}</div></div>`;
-    }
+    for (const [d, evs] of groups) html += dayBlock(d, evs);
     $("#listView").innerHTML = html;
   }
 
   function emptyMessage() {
     const w = WHEN.find((x) => x.id === state.when);
-    const hint = state.when !== "any"
-      ? `Nothing ${esc(w.label.toLowerCase())} yet. <button class="link" data-when="any">Show any time</button>`
-      : "No events match. Try another search or category.";
-    return `<p class="empty">${hint}</p>`;
+    if (state.when !== "any") {
+      return `<div class="empty"><strong>Nothing listed for ${esc(w.label.toLowerCase())} yet</strong>
+        New events are added every morning. <button class="link-btn" data-when="any">Show all dates</button></div>`;
+    }
+    return `<div class="empty"><strong>No events match</strong>Try a different search or type of event.</div>`;
   }
 
   // ---------- calendar view ----------
@@ -200,11 +247,11 @@
       const evs = onDay(list, dIso).filter((e) => spanDays(e) < 2).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
       const r = whenRange(state.when);
       const inR = r && dIso >= r[0] && dIso <= r[1];
-      const cls = ["day", d.getMonth() !== m.getMonth() && "out", dIso === todayIso && "today", dIso === state.sel && "sel", dIso < todayIso && "past", inR && "inrange", r && !inR && "dim"].filter(Boolean).join(" ");
+      const cls = ["cell", d.getMonth() !== m.getMonth() && "out", dIso === todayIso && "today", dIso === state.sel && "sel", dIso < todayIso && "past", inR && "inrange", r && !inR && "dim"].filter(Boolean).join(" ");
       const shown = evs.slice(0, 3);
-      html += `<button class="${cls}" data-day="${dIso}" aria-label="${esc(fmtDay.format(d))}, ${evs.length} events">
+      html += `<button class="${cls}" data-day="${dIso}" aria-label="${esc(fmtLong.format(d))}: ${evs.length === 1 ? "1 event" : evs.length + " events"}">
         <span class="num">${d.getDate()}</span>
-        ${shown.map((e) => `<span class="ev${spanDays(e) >= 2 ? " long" : ""}" title="${esc(e.title)}">${e.time && spanDays(e) < 2 ? esc(e.time) + " " : ""}${esc(e.title)}</span>`).join("")}
+        ${shown.map((e) => `<span class="ev" title="${esc(e.title)}">${e.time ? `<b>${esc(e.time)}</b> ` : ""}${esc(e.title)}</span>`).join("")}
         ${evs.length > 3 ? `<span class="more">+${evs.length - 3} more</span>` : ""}
         <span class="dots">${evs.slice(0, 4).map(() => "<i></i>").join("")}</span>
       </button>`;
@@ -213,9 +260,9 @@
     const all = onDay(list, state.sel);
     const dated = all.filter((e) => spanDays(e) < 2).sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
     const running = all.filter((e) => spanDays(e) >= 2);
-    $("#dayList").innerHTML = `<h3>${esc(fmtDay.format(parse(state.sel)))}</h3>` +
-      (dated.length ? `<div class="cards">${dated.map(card).join("")}</div>` : `<p class="empty">No one-off events on this day.</p>`) +
-      (running.length ? `<h3>Also on: exhibitions & courses</h3><div class="cards">${running.map(card).join("")}</div>` : "");
+    $("#dayList").innerHTML = `<h3 class="section-title">${esc(fmtLong.format(parse(state.sel)))}</h3>` +
+      (dated.length ? `<div class="sheet">${dated.map(row).join("")}</div>` : `<p class="section-note">No one-off events on this day.</p>`) +
+      (running.length ? `<h3 class="section-title">Exhibitions and courses on this day</h3><div class="tiles">${running.map(tile).join("")}</div>` : "");
   }
 
   // ---------- map view ----------
@@ -243,16 +290,15 @@
     const v = evs[0];
     const items = evs.map((e) => `<div class="pop-ev">
         <div class="pop-when">${esc(whenText(e))}</div>
-        <div class="pop-title">${esc(e.title)}</div>
+        <div class="pop-title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
         ${e.summary ? `<div class="pop-sum">${esc(e.summary.length > 140 ? e.summary.slice(0, 140) + "…" : e.summary)}</div>` : ""}
-        <span class="pill cat">${esc(e.category)}</span>
         <div class="pop-actions">
-          ${e.url ? `<a class="primary" href="${esc(e.url)}" target="_blank" rel="noopener">Details</a>` : ""}
-          <a href="${esc(gcalLink(e))}" target="_blank" rel="noopener">+ Calendar</a>
+          ${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">Event page</a>` : ""}
+          <a href="${esc(gcalLink(e))}" target="_blank" rel="noopener">Add to calendar</a>
         </div>
       </div>`).join("");
     return `<div class="pop-venue">${esc(v.venue || "Venue")}</div>
-      ${v.address || v.area ? `<div class="pop-addr">${esc([v.address, v.area].filter(Boolean).join(" · "))}</div>` : ""}
+      ${v.address || v.area ? `<div class="pop-addr">${esc([v.address, v.area].filter(Boolean).join(", "))}</div>` : ""}
       <a class="pop-gmaps" href="${esc(gmapsUrl(v))}" target="_blank" rel="noopener">${PIN_SVG}Open in Google Maps</a>
       <div class="pop-list">${items}</div>`;
   }
@@ -262,11 +308,12 @@
     const placed = list.filter((e) => !e.online && e.lat != null && e.lng != null);
     const online = list.filter((e) => e.online).length;
     const unplaced = list.length - placed.length - online;
-    const bits = [`${placed.length} event${placed.length === 1 ? "" : "s"} on the map`];
-    if (online) bits.push(`${online} online`);
-    if (unplaced) bits.push(`${unplaced} without a confirmed location`);
-    $("#mapNote").textContent = bits.join(" · ") + (online || unplaced ? " (see the list view)" : "");
-    if (!window.L) { $("#map").innerHTML = '<p class="empty">The map could not load. Check your connection.</p>'; return; }
+    const off = [];
+    if (online) off.push(`${online} online`);
+    if (unplaced) off.push(`${unplaced} without a confirmed venue`);
+    $("#mapNote").textContent = `${placed.length} event${placed.length === 1 ? "" : "s"} on the map.` +
+      (off.length ? ` ${off.join(" and ")} ${online + unplaced === 1 ? "is" : "are"} in the list view.` : "");
+    if (!window.L) { $("#map").innerHTML = '<div class="empty"><strong>The map didn\'t load</strong>Check your connection, or use the list view.</div>'; return; }
     initMap();
     map.invalidateSize();
 
@@ -313,6 +360,8 @@
     $("#listView").hidden = state.view !== "list";
     $("#calView").hidden = state.view !== "calendar";
     $("#mapView").hidden = state.view !== "map";
+    const n = visible().length;
+    $("#status").textContent = `${n} event${n === 1 ? "" : "s"} shown`;
     if (state.view === "list") renderList();
     else if (state.view === "calendar") renderCalendar();
     else renderMap();
@@ -351,7 +400,7 @@
   $("#nextMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); render(); });
   $("#todayBtn").addEventListener("click", () => { state.month = new Date(today.getFullYear(), today.getMonth(), 1); state.sel = todayIso; render(); });
   $("#calGrid").addEventListener("click", (e) => {
-    const b = e.target.closest(".day"); if (!b) return;
+    const b = e.target.closest(".cell"); if (!b) return;
     state.sel = b.dataset.day;
     const d = parse(state.sel);
     if (d.getMonth() !== state.month.getMonth()) state.month = new Date(d.getFullYear(), d.getMonth(), 1);
