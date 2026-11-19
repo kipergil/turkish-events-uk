@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-19T20:06+00:00",
- "count": 37,
+ "updated": "2026-11-19T20:50+00:00",
+ "count": 41,
  "events": [
   {
    "id": "eb-2003198664129",
@@ -87,7 +87,7 @@
    "online": false,
    "lat": 51.522792,
    "lng": -0.13749,
-   "category": "Talk",
+   "category": "Party",
    "summary": "A special World Children's Day edition with Prof. Dr Mine Doğantan-Dack",
    "url": "https://www.eventbrite.co.uk/e/2004512987305",
    "source": "Eventbrite"
@@ -398,6 +398,23 @@
    "source": "Eventbrite"
   },
   {
+   "id": "edis-outernet-2026",
+   "title": "Edis: UK & Europe Tour 2026",
+   "start": "2026-11-29",
+   "time": "19:00",
+   "venue": "HERE at Outernet",
+   "area": "",
+   "address": "",
+   "category": "Music",
+   "summary": "Turkish pop star Edis plays London on his UK and Europe tour.",
+   "url": "https://www.songkick.com/concerts/43210829-edis-at-outernet",
+   "source": "Songkick",
+   "end": "2026-11-29",
+   "online": false,
+   "lat": null,
+   "lng": null
+  },
+  {
    "id": "ats-yassiada",
    "title": "Revisiting Yassıada: Recent Research on an Early Byzantine Shipwreck",
    "start": "2026-12-01",
@@ -502,24 +519,6 @@
    "source": "Eventbrite"
   },
   {
-   "id": "eb-2004054369567",
-   "title": "Cypriot Antiquities in the UK: Building Cultural Bridges",
-   "start": "2026-12-07",
-   "end": "2026-12-07",
-   "time": "18:15",
-   "endTime": "20:30",
-   "venue": "The Cyprus High Commission",
-   "area": "Piccadilly Circus",
-   "address": "13 St. James's square, SW1Y 4LB",
-   "online": false,
-   "lat": 51.507458,
-   "lng": -0.13662,
-   "category": "Talk",
-   "summary": "A panel on how Cypriot antiquities in UK collections can connect communities, deepen understanding and build cultural bridges.",
-   "url": "https://www.eventbrite.co.uk/e/2004054369567",
-   "source": "Eventbrite"
-  },
-  {
    "id": "terrazza-turkish-night-dec7",
    "title": "Turkish Night: Live Music & Meyhane Vibes",
    "start": "2026-12-07",
@@ -536,6 +535,23 @@
    "online": false,
    "lat": 51.552151,
    "lng": -0.16691
+  },
+  {
+   "id": "tan-tasci-indigo-2026",
+   "title": "Tan Taşçı live in London",
+   "start": "2026-12-11",
+   "time": "18:30",
+   "venue": "indigo at The O2",
+   "area": "Greenwich",
+   "address": "Peninsula Square, SE10 0DX",
+   "category": "Music",
+   "summary": "Turkish singer Tan Taşçı in concert at indigo at The O2. Tickets via AXS.",
+   "url": "https://www.ents24.com/london-events/indigo-at-the-o2/tan-tasci/7549417",
+   "source": "Ents24",
+   "end": "2026-12-11",
+   "online": false,
+   "lat": 51.502194,
+   "lng": 0.002819
   },
   {
    "id": "eb-2004703282483",
@@ -556,6 +572,22 @@
    "source": "Eventbrite"
   },
   {
+   "id": "kazel-expo-london-2026",
+   "title": "Kazel Expo London: Food, Fashion, Music",
+   "start": "2026-12-11",
+   "end": "2026-12-13",
+   "venue": "ExCeL London",
+   "area": "Royal Docks",
+   "address": "1 Western Gateway, E16 1XL",
+   "category": "Festival",
+   "summary": "Touring Turkish festival of food, fashion and music, reported by Avrupa Gazete. Not yet on ExCeL's own calendar, so check before travelling.",
+   "url": "https://www.avrupagazete.co.uk/londrada-turk-ruzgari-6-dev-konser-pes-pese",
+   "source": "Avrupa Gazete",
+   "online": false,
+   "lat": 51.508134,
+   "lng": 0.028673
+  },
+  {
    "id": "eb-2004841279235",
    "title": "Vesaire | Live at Dingwalls, Camden",
    "start": "2026-12-16",
@@ -572,6 +604,22 @@
    "summary": "Rooted in Turkish rock, their sound bridges these musical traditions. Moving between mellow, rhythmic tracks and rock arrangements.",
    "url": "https://www.eventbrite.co.uk/e/2004841279235",
    "source": "Eventbrite"
+  },
+  {
+   "id": "kardes-turkuler-ahmet-kaya-2026",
+   "title": "Kardeş Türküler sing Ahmet Kaya",
+   "start": "2026-12-20",
+   "venue": "O2 Forum Kentish Town",
+   "area": "Kentish Town",
+   "address": "9-17 Highgate Road, NW5 1JY",
+   "category": "Music",
+   "summary": "Kardeş Türküler perform the songs of Ahmet Kaya. Tickets via Ticketmaster.",
+   "url": "https://www.avrupagazete.co.uk/londrada-turk-ruzgari-6-dev-konser-pes-pese",
+   "source": "Avrupa Gazete",
+   "end": "2026-12-20",
+   "online": false,
+   "lat": 51.551799,
+   "lng": -0.142017
   },
   {
    "id": "eb-2004859404448",
@@ -608,6 +656,22 @@
    "summary": "by Elçin Poyrazlar",
    "url": "https://www.eventbrite.co.uk/e/2004923325638",
    "source": "Eventbrite"
+  },
+  {
+   "id": "blok3-o2-arena-2027",
+   "title": "BLOK3: Global Arena Tour",
+   "start": "2027-01-29",
+   "venue": "The O2 Arena",
+   "area": "Greenwich",
+   "address": "Peninsula Square, SE10 0DX",
+   "category": "Music",
+   "summary": "Turkish rap and trap artist BLOK3 headlines the O2 Arena. Presented by Rare Emotion; tickets mostly via AXS.",
+   "url": "https://www.avrupagazete.co.uk/londrada-turk-ruzgari-6-dev-konser-pes-pese",
+   "source": "Avrupa Gazete",
+   "end": "2027-01-29",
+   "online": false,
+   "lat": 51.502194,
+   "lng": 0.002819
   },
   {
    "id": "eb-2001878717132",
@@ -658,7 +722,7 @@
    "online": false,
    "lat": 51.571963,
    "lng": -0.096264,
-   "category": "Comedy & theatre",
+   "category": "Theatre & comedy",
    "summary": "Ahmet Bilge brings his sharp, hilarious take on Turkish life to the London stage—come laugh with us live!",
    "url": "https://www.eventbrite.co.uk/e/2004644143597",
    "source": "Eventbrite"
