@@ -15,7 +15,30 @@
   const fmtShort = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" });
   const fmtMonth = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" });
 
-  const state = { q: "", cat: "All", view: "list", month: new Date(today.getFullYear(), today.getMonth(), 1), sel: todayIso };
+  const state = { q: "", cat: "All", when: "any", view: "list", month: new Date(today.getFullYear(), today.getMonth(), 1), sel: todayIso };
+
+  // ---------- quick date ranges (Meetup-style) ----------
+  // Each returns [fromIso, toIso], inclusive. Weeks run Monday to Sunday; the weekend is Friday to Sunday.
+  const dow = (today.getDay() + 6) % 7; // Mon=0 … Sun=6
+  const sunday = addDays(today, 6 - dow);
+  const WHEN = [
+    { id: "any", label: "Any time" },
+    { id: "today", label: "Today", range: () => [today, today] },
+    { id: "tomorrow", label: "Tomorrow", range: () => [addDays(today, 1), addDays(today, 1)] },
+    { id: "weekend", label: "This weekend", hint: "Fri–Sun", range: () => [dow >= 4 ? today : addDays(today, 4 - dow), sunday] },
+    { id: "week", label: "This week", hint: "Until Sunday", range: () => [today, sunday] },
+    { id: "nextweek", label: "Next week", hint: "Mon–Sun", range: () => [addDays(sunday, 1), addDays(sunday, 7)] },
+    { id: "month", label: "This month", range: () => [today, new Date(today.getFullYear(), today.getMonth() + 1, 0)] },
+  ];
+  const whenRange = (id) => { const w = WHEN.find((x) => x.id === id); return w && w.range ? w.range().map(iso) : null; };
+
+  // One-off events count on the day they start (a party ending at 4am belongs to the night it starts).
+  // Exhibitions and courses count on every day they run.
+  function inRange(e, r) {
+    if (!r) return true;
+    const [a, b] = r;
+    return spanDays(e) >= 2 ? e.start <= b && (e.end || e.start) >= a : e.start >= a && e.start <= b;
+  }
   let events = [];
 
   // ---------- data ----------
@@ -31,22 +54,34 @@
     }
   }
 
-  const visible = () => {
+  // Applies every filter except the ones named in `skip`, so each chip row can count its own options.
+  function filtered(skip = []) {
     const q = state.q.trim().toLowerCase();
+    const r = skip.includes("when") ? null : whenRange(state.when);
     return events.filter((e) =>
-      (state.cat === "All" || e.category === state.cat) &&
+      (skip.includes("cat") || state.cat === "All" || e.category === state.cat) &&
+      inRange(e, r) &&
       (!q || [e.title, e.venue, e.area, e.summary, e.category, e.address].join(" ").toLowerCase().includes(q)));
-  };
+  }
+  const visible = () => filtered();
 
   // ---------- chips ----------
+  function renderWhen() {
+    const base = filtered(["when"]);
+    $("#when").innerHTML = WHEN.map((w) => {
+      const n = w.range ? base.filter((e) => inRange(e, w.range().map(iso))).length : base.length;
+      return `<button class="chip when" aria-pressed="${w.id === state.when}" data-when="${w.id}"${w.hint ? ` title="${w.hint}"` : ""}>${esc(w.label)}<span class="n">${n}</span></button>`;
+    }).join("");
+  }
+
   function renderChips() {
-    const q = state.q.trim().toLowerCase();
-    const base = events.filter((e) => !q || [e.title, e.venue, e.area, e.summary, e.category].join(" ").toLowerCase().includes(q));
+    const base = filtered(["cat"]);
     const counts = {};
     base.forEach((e) => (counts[e.category] = (counts[e.category] || 0) + 1));
     const cats = ["All", ...Object.keys(counts).sort((a, b) => counts[b] - counts[a])];
+    if (state.cat !== "All" && !counts[state.cat]) cats.push(state.cat); // keep the active chip visible at 0
     $("#chips").innerHTML = cats.map((c) =>
-      `<button class="chip" aria-pressed="${c === state.cat}" data-cat="${esc(c)}">${esc(c)}<span class="n">${c === "All" ? base.length : counts[c]}</span></button>`
+      `<button class="chip" aria-pressed="${c === state.cat}" data-cat="${esc(c)}">${esc(c)}<span class="n">${c === "All" ? base.length : counts[c] || 0}</span></button>`
     ).join("");
   }
 
@@ -93,28 +128,40 @@
   function relLabel(dIso) {
     if (dIso === todayIso) return "Today";
     if (dIso === iso(addDays(today, 1))) return "Tomorrow";
-    const diff = Math.round((parse(dIso) - today) / 864e5);
-    if (diff < 7) return "This week";
+    const d = parse(dIso);
+    if (d <= sunday) return d.getDay() === 0 || d.getDay() >= 5 ? "This weekend" : "This week";
+    if (d <= addDays(sunday, 7)) return "Next week";
     return "";
   }
 
   // ---------- list view ----------
   function renderList() {
     const list = visible();
-    if (!list.length) { $("#listView").innerHTML = `<p class="empty">No events match. Try another search or category.</p>`; return; }
-    const ongoing = list.filter((e) => spanDays(e) >= 2 && e.start <= todayIso);
+    if (!list.length) { $("#listView").innerHTML = emptyMessage(); return; }
+    const r = whenRange(state.when);
+    const from = r && r[0] > todayIso ? r[0] : todayIso;
+    const ongoing = list.filter((e) => spanDays(e) >= 2 && e.start <= from);
     const rest = list.filter((e) => !ongoing.includes(e));
     const groups = new Map();
     rest.forEach((e) => { if (!groups.has(e.start)) groups.set(e.start, []); groups.get(e.start).push(e); });
     let html = "";
     if (ongoing.length) {
-      html += `<div class="group"><h2>On now <span class="rel">· exhibitions & multi-day</span></h2><div class="cards">${ongoing.map(card).join("")}</div></div>`;
+      const label = from === todayIso ? "On now" : "Also running";
+      html += `<div class="group"><h2>${label} <span class="rel">· exhibitions & multi-day</span></h2><div class="cards">${ongoing.map(card).join("")}</div></div>`;
     }
     for (const [d, evs] of groups) {
       const rel = relLabel(d);
       html += `<div class="group"><h2>${esc(fmtDay.format(parse(d)))}${rel ? ` <span class="rel">· ${rel}</span>` : ""}</h2><div class="cards">${evs.map(card).join("")}</div></div>`;
     }
     $("#listView").innerHTML = html;
+  }
+
+  function emptyMessage() {
+    const w = WHEN.find((x) => x.id === state.when);
+    const hint = state.when !== "any"
+      ? `Nothing ${esc(w.label.toLowerCase())} yet. <button class="link" data-when="any">Show any time</button>`
+      : "No events match. Try another search or category.";
+    return `<p class="empty">${hint}</p>`;
   }
 
   // ---------- calendar view ----------
@@ -132,7 +179,9 @@
       const dIso = iso(d);
       // Cells show dated events only; exhibitions and courses would fill every cell, so they sit in the day panel.
       const evs = onDay(list, dIso).filter((e) => spanDays(e) < 2).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-      const cls = ["day", d.getMonth() !== m.getMonth() && "out", dIso === todayIso && "today", dIso === state.sel && "sel", dIso < todayIso && "past"].filter(Boolean).join(" ");
+      const r = whenRange(state.when);
+      const inR = r && dIso >= r[0] && dIso <= r[1];
+      const cls = ["day", d.getMonth() !== m.getMonth() && "out", dIso === todayIso && "today", dIso === state.sel && "sel", dIso < todayIso && "past", inR && "inrange", r && !inR && "dim"].filter(Boolean).join(" ");
       const shown = evs.slice(0, 3);
       html += `<button class="${cls}" data-day="${dIso}" aria-label="${esc(fmtDay.format(d))}, ${evs.length} events">
         <span class="num">${d.getDate()}</span>
@@ -152,21 +201,49 @@
 
   // ---------- wiring ----------
   function render() {
+    renderWhen();
     renderChips();
+    // On narrow screens the chip rows scroll sideways: keep the active chip in view.
+    document.querySelectorAll(".chips").forEach((row) => {
+      const on = row.querySelector('[aria-pressed="true"]');
+      if (!on) return;
+      const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;
+      if (l < row.scrollLeft || r > row.scrollLeft + row.clientWidth) row.scrollLeft = l - 16;
+    });
     document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === state.view));
     $("#listView").hidden = state.view !== "list";
     $("#calView").hidden = state.view !== "calendar";
     state.view === "list" ? renderList() : renderCalendar();
   }
 
-  function setView(v) {
-    state.view = v;
-    history.replaceState(null, "", v === "calendar" ? "#calendar" : location.pathname + location.search);
+  // Filters live in the URL (?when=weekend&cat=Music&view=calendar) so a filtered page can be shared.
+  function syncUrl() {
+    const p = new URLSearchParams();
+    if (state.when !== "any") p.set("when", state.when);
+    if (state.cat !== "All") p.set("cat", state.cat);
+    if (state.view !== "list") p.set("view", state.view);
+    const qs = p.toString();
+    history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+  }
+
+  function setView(v) { state.view = v; syncUrl(); render(); }
+
+  function setWhen(id) {
+    state.when = id;
+    const r = whenRange(id);
+    if (r) { // point the calendar at the start of the chosen range
+      const d = parse(r[0]);
+      state.sel = r[0];
+      state.month = new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    syncUrl();
     render();
   }
 
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
-  $("#chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { state.cat = b.dataset.cat; render(); } });
+  $("#chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { state.cat = b.dataset.cat; syncUrl(); render(); } });
+  $("#when").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setWhen(b.dataset.when); });
+  $("#listView").addEventListener("click", (e) => { const b = e.target.closest("[data-when]"); if (b) setWhen(b.dataset.when); });
   document.querySelector(".seg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setView(b.dataset.view); });
   $("#prevMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); render(); });
   $("#nextMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); render(); });
@@ -180,6 +257,11 @@
     $("#dayList").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 
-  if (location.hash === "#calendar") state.view = "calendar";
-  load().then(render);
+  const params = new URLSearchParams(location.search);
+  if (params.get("view") === "calendar" || location.hash === "#calendar") state.view = "calendar";
+  if (params.get("cat")) state.cat = params.get("cat");
+  load().then(() => {
+    const w = params.get("when");
+    if (w && WHEN.some((x) => x.id === w)) setWhen(w); else render();
+  });
 })();
