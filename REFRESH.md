@@ -43,6 +43,8 @@ For each event that is **not** already in `data/events.json`, add an object to `
   "online": false,
   "area": "Neighbourhood",
   "address": "Street, postcode",
+  "lat": 51.5,
+  "lng": -0.12,
   "category": "Music | Party | Talk | Workshop | Exhibition | Film | Business | Community | Festival | Food & drink | Comedy & theatre | Culture",
   "summary": "One or two plain sentences.",
   "url": "Most specific event or ticket page",
@@ -54,6 +56,7 @@ Rules:
 
 - Include only events whose date and year you have confirmed on a page. Skip listings with no year, or with a weekday that doesn't match the date.
 - Leave fields empty rather than guessing.
+- `lat`/`lng` are optional. Include the postcode in `address` and the script looks it up on postcodes.io, or reuses the location of an Eventbrite event at the same venue. Only set `lat`/`lng` yourself for a venue with no postcode, and only if you've checked them.
 - Remove curated events that ended before today.
 - If an Eventbrite result is not really Turkish-related (the word only appears in passing, or "turkey" means the bird), add its `id` to `data/excluded.json`.
 

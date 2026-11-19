@@ -104,23 +104,42 @@
     return "https://calendar.google.com/calendar/render?" + p;
   }
 
+  // ---------- Google Maps ----------
+  const PIN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>';
+  const hasPlace = (e) => !e.online && (e.venue || e.address || e.lat != null);
+  function gmapsUrl(e) {
+    // Searching by venue name + address finds the actual place (opening hours, photos); fall back to coordinates.
+    const text = [e.venue, e.address].filter(Boolean).join(", ");
+    const query = text ? `${text}, London` : `${e.lat},${e.lng}`;
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
+  }
+
+  function whenText(e) {
+    if (spanDays(e) >= 2) return `${fmtShort.format(parse(e.start))} – ${fmtShort.format(parse(e.end))}`;
+    return `${fmtDay.format(parse(e.start))}${e.time ? " · " + e.time : ""}${e.endTime ? "–" + e.endTime : ""}`;
+  }
+
   function card(e) {
     const long = spanDays(e) >= 2;
     const when = long
       ? `<div class="t">${e.start <= todayIso ? "Now" : esc(fmtShort.format(parse(e.start)))}</div><div class="t2">until ${esc(fmtShort.format(parse(e.end)))}</div>`
       : `<div class="t">${esc(e.time || "All day")}</div>${e.endTime ? `<div class="t2">– ${esc(e.endTime)}</div>` : ""}`;
     const place = [e.venue, e.area].filter(Boolean).join(" · ");
+    const placeHtml = hasPlace(e)
+      ? `<a class="venue-link" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open in Google Maps">${PIN_SVG}${esc(place)}</a>`
+      : esc(place);
     return `<article class="card">
       <div class="when">${when}</div>
       <div class="body">
         <h3 class="title">${esc(e.title)}</h3>
-        <div class="meta">${esc(place)}</div>
+        <div class="meta">${placeHtml}</div>
         ${e.summary ? `<div class="summary">${esc(e.summary)}</div>` : ""}
         <div class="tags"><span class="pill cat">${esc(e.category)}</span>${e.online ? '<span class="pill">Online</span>' : ""}<span class="pill">${esc(e.source || "")}</span></div>
       </div>
       <div class="actions">
         ${e.url ? `<a class="btn primary" href="${esc(e.url)}" target="_blank" rel="noopener">Details</a>` : ""}
         <a class="btn" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" title="Add to Google Calendar">+ Calendar</a>
+        ${hasPlace(e) ? `<a class="btn icon" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open venue in Google Maps" aria-label="Open venue in Google Maps">${PIN_SVG}</a>` : ""}
       </div>
     </article>`;
   }
@@ -199,6 +218,86 @@
       (running.length ? `<h3>Also on: exhibitions & courses</h3><div class="cards">${running.map(card).join("")}</div>` : "");
   }
 
+  // ---------- map view ----------
+  let map = null, cluster = null, lastMapKey = "";
+
+  function initMap() {
+    if (map || !window.L) return;
+    map = L.map("map", { scrollWheelZoom: true }).setView([51.507, -0.128], 11);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+    cluster = L.markerClusterGroup({
+      showCoverageOnHover: false, maxClusterRadius: 40, spiderfyOnMaxZoom: true,
+      iconCreateFunction: (c) => {
+        // Count events, not venues, so the bubble matches what the popups contain.
+        const n = c.getAllChildMarkers().reduce((sum, m) => sum + (m.options.eventCount || 1), 0);
+        const size = n < 10 ? 36 : n < 30 ? 42 : 48;
+        return L.divIcon({ className: "", iconSize: [size, size], html: `<div class="cluster" style="width:${size}px;height:${size}px">${n}</div>` });
+      },
+    });
+    map.addLayer(cluster);
+  }
+
+  function popupHtml(evs) {
+    const v = evs[0];
+    const items = evs.map((e) => `<div class="pop-ev">
+        <div class="pop-when">${esc(whenText(e))}</div>
+        <div class="pop-title">${esc(e.title)}</div>
+        ${e.summary ? `<div class="pop-sum">${esc(e.summary.length > 140 ? e.summary.slice(0, 140) + "…" : e.summary)}</div>` : ""}
+        <span class="pill cat">${esc(e.category)}</span>
+        <div class="pop-actions">
+          ${e.url ? `<a class="primary" href="${esc(e.url)}" target="_blank" rel="noopener">Details</a>` : ""}
+          <a href="${esc(gcalLink(e))}" target="_blank" rel="noopener">+ Calendar</a>
+        </div>
+      </div>`).join("");
+    return `<div class="pop-venue">${esc(v.venue || "Venue")}</div>
+      ${v.address || v.area ? `<div class="pop-addr">${esc([v.address, v.area].filter(Boolean).join(" · "))}</div>` : ""}
+      <a class="pop-gmaps" href="${esc(gmapsUrl(v))}" target="_blank" rel="noopener">${PIN_SVG}Open in Google Maps</a>
+      <div class="pop-list">${items}</div>`;
+  }
+
+  function renderMap() {
+    const list = visible();
+    const placed = list.filter((e) => !e.online && e.lat != null && e.lng != null);
+    const online = list.filter((e) => e.online).length;
+    const unplaced = list.length - placed.length - online;
+    const bits = [`${placed.length} event${placed.length === 1 ? "" : "s"} on the map`];
+    if (online) bits.push(`${online} online`);
+    if (unplaced) bits.push(`${unplaced} without a confirmed location`);
+    $("#mapNote").textContent = bits.join(" · ") + (online || unplaced ? " (see the list view)" : "");
+    if (!window.L) { $("#map").innerHTML = '<p class="empty">The map could not load. Check your connection.</p>'; return; }
+    initMap();
+    map.invalidateSize();
+
+    // One pin per venue; several events at the same place share a popup.
+    const byVenue = new Map();
+    placed.forEach((e) => {
+      const k = `${e.lat.toFixed(5)},${e.lng.toFixed(5)}`;
+      if (!byVenue.has(k)) byVenue.set(k, []);
+      byVenue.get(k).push(e);
+    });
+    const key = [...byVenue.keys()].sort().join("|") + "#" + placed.map((e) => e.id).join(",");
+    if (key === lastMapKey) return;
+    lastMapKey = key;
+
+    cluster.clearLayers();
+    const markers = [];
+    for (const evs of byVenue.values()) {
+      evs.sort((a, b) => spanDays(a) - spanDays(b) || a.start.localeCompare(b.start) || (a.time || "").localeCompare(b.time || ""));
+      const allLong = evs.every((e) => spanDays(e) >= 2);
+      const icon = L.divIcon({
+        className: "", iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28],
+        html: `<div class="pin${allLong ? " long" : ""}"><span>${evs.length > 1 ? evs.length : ""}</span></div>`,
+      });
+      const m = L.marker([evs[0].lat, evs[0].lng], { icon, title: evs[0].venue || evs[0].title, riseOnHover: true, eventCount: evs.length })
+        .bindPopup(popupHtml(evs), { maxWidth: 320, autoPanPadding: [20, 20] });
+      markers.push(m);
+    }
+    cluster.addLayers(markers);
+    if (markers.length) map.fitBounds(cluster.getBounds(), { padding: [40, 40], maxZoom: 15 });
+  }
+
   // ---------- wiring ----------
   function render() {
     renderWhen();
@@ -213,7 +312,10 @@
     document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === state.view));
     $("#listView").hidden = state.view !== "list";
     $("#calView").hidden = state.view !== "calendar";
-    state.view === "list" ? renderList() : renderCalendar();
+    $("#mapView").hidden = state.view !== "map";
+    if (state.view === "list") renderList();
+    else if (state.view === "calendar") renderCalendar();
+    else renderMap();
   }
 
   // Filters live in the URL (?when=weekend&cat=Music&view=calendar) so a filtered page can be shared.
@@ -258,7 +360,8 @@
   });
 
   const params = new URLSearchParams(location.search);
-  if (params.get("view") === "calendar" || location.hash === "#calendar") state.view = "calendar";
+  if (["calendar", "map"].includes(params.get("view"))) state.view = params.get("view");
+  else if (location.hash === "#calendar") state.view = "calendar";
   if (params.get("cat")) state.cat = params.get("cat");
   load().then(() => {
     const w = params.get("when");
