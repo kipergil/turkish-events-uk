@@ -22,7 +22,7 @@
   const CAT_VAR = {
     Music: "music", Party: "party", Talk: "talk", Workshop: "workshop", Exhibition: "exhibition", Film: "film",
     Business: "business", Festival: "festival", Community: "community", "Food & drink": "food",
-    "Comedy & theatre": "comedy", Culture: "culture",
+    "Theatre & comedy": "comedy", "Faith & spiritual": "faith", "Official & embassy": "official", Culture: "culture",
   };
   const dot = (cat) => `<span class="dot" style="--c: var(--c-${CAT_VAR[cat] || "culture"})" aria-hidden="true"></span>`;
 

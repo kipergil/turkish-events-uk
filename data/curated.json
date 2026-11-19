@@ -124,5 +124,68 @@
   "summary": "Live Turkish music with singer Ezgi Telci and guitarist Burak Keleş. Table booking recommended.",
   "url": "https://www.eventbrite.co.uk/e/turkish-live-music-at-terrazza-hampstead-tickets-2003956897024",
   "source": "Eventbrite"
+ },
+ {
+  "id": "edis-outernet-2026",
+  "title": "Edis: UK & Europe Tour 2026",
+  "start": "2026-11-29",
+  "time": "19:00",
+  "venue": "HERE at Outernet",
+  "area": "",
+  "address": "",
+  "category": "Music",
+  "summary": "Turkish pop star Edis plays London on his UK and Europe tour.",
+  "url": "https://www.songkick.com/concerts/43210829-edis-at-outernet",
+  "source": "Songkick"
+ },
+ {
+  "id": "tan-tasci-indigo-2026",
+  "title": "Tan Taşçı live in London",
+  "start": "2026-12-11",
+  "time": "18:30",
+  "venue": "indigo at The O2",
+  "area": "Greenwich",
+  "address": "Peninsula Square, SE10 0DX",
+  "category": "Music",
+  "summary": "Turkish singer Tan Taşçı in concert at indigo at The O2. Tickets via AXS.",
+  "url": "https://www.ents24.com/london-events/indigo-at-the-o2/tan-tasci/7549417",
+  "source": "Ents24"
+ },
+ {
+  "id": "kazel-expo-london-2026",
+  "title": "Kazel Expo London: Food, Fashion, Music",
+  "start": "2026-12-11",
+  "end": "2026-12-13",
+  "venue": "ExCeL London",
+  "area": "Royal Docks",
+  "address": "1 Western Gateway, E16 1XL",
+  "category": "Festival",
+  "summary": "Touring Turkish festival of food, fashion and music, reported by Avrupa Gazete. Not yet on ExCeL's own calendar, so check before travelling.",
+  "url": "https://www.avrupagazete.co.uk/londrada-turk-ruzgari-6-dev-konser-pes-pese",
+  "source": "Avrupa Gazete"
+ },
+ {
+  "id": "kardes-turkuler-ahmet-kaya-2026",
+  "title": "Kardeş Türküler sing Ahmet Kaya",
+  "start": "2026-12-20",
+  "venue": "O2 Forum Kentish Town",
+  "area": "Kentish Town",
+  "address": "9-17 Highgate Road, NW5 1JY",
+  "category": "Music",
+  "summary": "Kardeş Türküler perform the songs of Ahmet Kaya. Tickets via Ticketmaster.",
+  "url": "https://www.avrupagazete.co.uk/londrada-turk-ruzgari-6-dev-konser-pes-pese",
+  "source": "Avrupa Gazete"
+ },
+ {
+  "id": "blok3-o2-arena-2027",
+  "title": "BLOK3: Global Arena Tour",
+  "start": "2027-01-29",
+  "venue": "The O2 Arena",
+  "area": "Greenwich",
+  "address": "Peninsula Square, SE10 0DX",
+  "category": "Music",
+  "summary": "Turkish rap and trap artist BLOK3 headlines the O2 Arena. Presented by Rare Emotion; tickets mostly via AXS.",
+  "url": "https://www.avrupagazete.co.uk/londrada-turk-ruzgari-6-dev-konser-pes-pese",
+  "source": "Avrupa Gazete"
  }
 ]

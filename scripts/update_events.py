@@ -30,6 +30,9 @@ LONDON = ZoneInfo("Europe/London")
 SEARCH_TERMS = [
     "turkish", "turkey", "turkiye", "turk", "ottoman", "istanbul",
     "anatolia", "turkish-cypriot", "meyhane", "turkish-music", "turkish-party",
+    # wider net: cinema, theatre, festivals, community, faith and official events
+    "turkish-cinema", "turkish-theatre", "turkish-festival", "turkish-community",
+    "turkish-language", "turkish-food", "turkish-embassy", "mevlevi", "alevi",
 ]
 PAGES_PER_TERM = 3
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
@@ -37,24 +40,38 @@ UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chr
 # Must match the title, summary or organiser tags for an event to count as Turkish.
 RELEVANT = re.compile(
     r"turk|türk|türkiye|ottoman|osmanl|istanbul|constantinople|anatoli|anadolu|"
-    r"cypriot|kıbrıs|kibris|meyhane|rakı|\braki\b|baklava|mevlevi|\bsema\b|ebru|"
-    r"türkçe|turkce|bağlama|baglama|\bsaz\b|kebab|lokum|halay|zeybek",
+    # Cypriot only counts when it is Turkish Cypriot; Greek Cypriot events are out of scope
+    r"turkish[- ]cypriot|kıbrıs|kibris|\btrnc\b|\bkktc\b|"
+    r"meyhane|rakı|\braki\b|baklava|mevlevi|\bsema\b|semah|ebru|"
+    r"türkçe|turkce|bağlama|baglama|\bsaz\b|kebab|lokum|halay|zeybek|"
+    # cinema, theatre and shadow play
+    r"sinema|tiyatro|karagöz|karagoz|hacivat|nasreddin|"
+    # faith and community institutions specific to Turkish-speaking London
+    r"mevlid|mevlit|kandil|kermes|süleymaniye|suleymaniye|aziziye|diyanet|cemevi|alevi|ilahi|tasavvuf|"
+    r"türkevi|halkevi|day-mer|büyükelçi|cumhuriyet bayram",
     re.I,
 )
+# Letters that only Turkish uses among the major Latin-script languages (ğ, dotless ı, dotted İ, ş).
+TURKISH_LETTERS = re.compile(r"[ğĞıİşŞ]")
 # Titles that use a Turkish word for something unrelated (e.g. "Turkey" dinners at Christmas).
 IRRELEVANT = re.compile(
     r"christmas turkey|roast turkey|turkey dinner|turkey trot|cold turkey|turkey burner|turk'?s head", re.I)
 
-CATEGORIES = [  # first match wins
-    ("Comedy & theatre", r"comedy|stand-up|stand up|theatre|theater|\bplay\b"),
-    ("Festival", r"festival|\bfair\b|bazaar|şenlik|bayram"),
-    ("Business", r"business|b2b|expo|supplier|sourcing|networking|entrepreneur|investor|trade|startup|founder|tech"),
+CATEGORIES = [  # first match wins, so the more specific kinds come first
+    ("Official & embassy", r"embassy|consulate|consul general|ambassador|büyükelçi|high commission|republic day|"
+                           r"cumhuriyet|national day|commemorat|anma|resepsiyon|official reception"),
+    # "play" alone is left out: bands "play" too. Theatre needs a theatre word.
+    ("Theatre & comedy", r"comedy|stand-up|stand up|theatre|theater|tiyatro|stage play|opera|ballet|karagöz|karagoz|shadow pupp"),
+    ("Business", r"business|b2b|expo\b|supplier|sourcing|networking|entrepreneur|investor|trade|startup|founder|tech"),
     ("Talk", r"talk|lecture|presentation|seminar|panel|conference|book launch|in conversation|symposium|webinar|reading"),
+    ("Film", r"film|cinema|sinema|screening|movie|documentary"),
+    ("Festival", r"festival|\bfair\b|bazaar|şenlik|carnival|karnaval|kermes|street party"),
     ("Exhibition", r"exhibition|gallery|museum|\btour\b|installation|on view|retrospective"),
-    ("Film", r"film|cinema|screening|movie|documentary"),
     ("Workshop", r"workshop|class|course|lesson|masterclass|atölye|atolye|learn|craft|ebru|calligraphy|mosaic"),
     ("Party", r"party|club|night|dj|rave|house|disco|dance|eve\b|gala|meyhane|parti"),
     ("Music", r"concert|music|live|band|sing|recital|sufi|sema|jazz|orchestra|konser|şarkı|acoustic|performance|listening"),
+    ("Faith & spiritual", r"mosque|camii|cami\b|mevlid|mevlit|kandil|iftar|ramazan|ramadan|\beid\b|bayram|cemevi|semah|"
+                          r"prayer|\bdua\b|quran|kuran|ilahi|tasavvuf|sohbet|religio|spiritual"),
     ("Food & drink", r"coffee|food|dinner|brunch|breakfast|kahvaltı|tasting|cook|supper|kebab|baklava|wine|rakı|raki"),
     ("Community", r"meet|meetup|social|community|reception|celebrat|charity|fundrais|picnic|family|kids|children"),
 ]
@@ -91,12 +108,45 @@ def canonical_url(url):
     return f"https://www.eventbrite.co.uk/e/{m.group(1)}" if m else url
 
 
+# Eventbrite "format" values that map cleanly onto our categories. Organisers pick these
+# deliberately, so they beat keyword guesses. Vaguer formats ("Performance", "Other") fall through.
+EVENTBRITE_FORMATS = {
+    "Seminar or Talk": "Talk",
+    "Conference": "Talk",
+    "Class, Training, or Workshop": "Workshop",
+    "Screening": "Film",
+    "Festival or Fair": "Festival",
+    "Party or Social Gathering": "Party",
+    "Tour": "Exhibition",
+    "Expo": "Business",
+    "Networking": "Business",
+}
+
+
+def eventbrite_category(r, title, summary, tags):
+    fmt = next((t.get("display_name") for t in r.get("tags", []) if t.get("prefix") == "EventbriteFormat"), None)
+    text_cat = categorize(f"{title} {summary}")
+    # Comedy, official and business events are clear from their wording even when the format says otherwise.
+    if text_cat in ("Theatre & comedy", "Official & embassy", "Business"):
+        return text_cat
+    if fmt in EVENTBRITE_FORMATS:
+        return EVENTBRITE_FORMATS[fmt]
+    if text_cat != "Culture":
+        return text_cat
+    # Last resort: Eventbrite's broad category tags (e.g. "Performing & Visual Arts").
+    return categorize(tags)
+
+
 def from_eventbrite(r):
     tags = " ".join(t.get("display_name", "") for t in r.get("tags", []))
     title, summary = clean(r.get("name")), clean(r.get("summary"))
     if IRRELEVANT.search(title) or IRRELEVANT.search(summary):
         return None
-    if not (RELEVANT.search(title) or RELEVANT.search(summary) or "Turkish" in tags):
+    text_match = RELEVANT.search(title) or RELEVANT.search(summary)
+    # An organiser's "Turkish" tag alone is unreliable (mis-tagged networking events), so a
+    # tag-only match also needs Turkish-only letters in the title or summary.
+    tag_match = "Turkish" in tags and TURKISH_LETTERS.search(f"{title} {summary}")
+    if not (text_match or tag_match):
         return None
     if r.get("is_cancelled"):
         return None
@@ -125,7 +175,7 @@ def from_eventbrite(r):
         "online": online,
         "lat": None if online else lat,
         "lng": None if online else lng,
-        "category": categorize(f"{title} {summary} {tags}"),
+        "category": eventbrite_category(r, title, summary, tags),
         "summary": summary[:280],
         "url": canonical_url(url),
         "source": "Eventbrite",
@@ -258,7 +308,9 @@ def main():
         if (ev.get("end") or ev["start"]) < today:
             continue
         key = (ev["start"], norm_title(ev["title"]))
-        url_key = ev.get("url")
+        # Same link on the same day is the same event. A shared link alone isn't: one news
+        # article can announce several concerts.
+        url_key = (ev.get("url"), ev["start"]) if ev.get("url") else None
         if key in seen_keys or (url_key and url_key in seen_keys):
             continue
         seen_keys.update({key, url_key})

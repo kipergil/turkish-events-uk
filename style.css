@@ -30,6 +30,8 @@
   --c-community: #2E7D4F;
   --c-food: #C25E1E;
   --c-comedy: #B03A6B;
+  --c-faith: #8A5A12;
+  --c-official: #3A4A6B;
   --c-culture: #566079;
 
   --radius-sheet: 14px;
@@ -64,6 +66,8 @@
     --c-community: #7BCB98;
     --c-food: #F29A5E;
     --c-comedy: #F08DB6;
+    --c-faith: #E2B36A;
+    --c-official: #B4C2E0;
     --c-culture: #A6AEC6;
     color-scheme: dark;
   }
