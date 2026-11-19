@@ -1,0 +1,55 @@
+# Backup daily refresh: pulls Eventbrite listings and commits the regenerated feed.
+# Runs before the Claude morning refresh (06:47 London), which also curates other sources.
+# Every push to main redeploys the site on Vercel.
+name: Daily Eventbrite refresh
+
+on:
+  schedule:
+    - cron: "17 5 * * *" # 05:17 UTC = 05:17 GMT / 06:17 BST
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild feed, commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898+github-actions[bot]@users.noreply.github.com"
+          # Retry if someone else (e.g. the Claude refresh) pushed in the meantime:
+          # start again from the latest main and regenerate, so data files never need merging.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            python3 scripts/update_events.py
+            python3 -c "import json; json.load(open('data/events.json'))"
+            if git diff --quiet -- data/; then
+              echo "No changes to the feed."
+              exit 0
+            fi
+            git add data/
+            git commit -m "Daily Eventbrite refresh $(TZ=Europe/London date +%F)"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt), retrying from latest main..."
+            sleep $((attempt * 15))
+          done
+          echo "Could not push after 3 attempts." >&2
+          exit 1
