@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turkish Events London</title>
+  <meta name="description" content="Turkish events in London, updated every morning: concerts, parties, talks, workshops, exhibitions, meetups and community events.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">☾</span>
+        <div>
+          <h1>Turkish Events London</h1>
+          <p class="sub">Londra'daki Türk etkinlikleri · <span id="updated">updated daily</span></p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <label class="search">
+          <span class="sr">Search events</span>
+          <input id="q" type="search" placeholder="Search events, venues, areas…" autocomplete="off">
+        </label>
+        <div class="seg" role="tablist" aria-label="View">
+          <button role="tab" data-view="list" aria-selected="true">List</button>
+          <button role="tab" data-view="calendar" aria-selected="false">Calendar</button>
+        </div>
+      </div>
+      <div id="chips" class="chips" aria-label="Filter by category"></div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="listView"></section>
+    <section id="calView" hidden>
+      <div class="cal-head">
+        <button class="nav" id="prevMonth" aria-label="Previous month">‹</button>
+        <h2 id="monthLabel"></h2>
+        <button class="nav" id="nextMonth" aria-label="Next month">›</button>
+        <button class="today-btn" id="todayBtn">Today</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div id="dayList" class="day-list"></div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p>Collected every morning from Eventbrite, the Yunus Emre Institute, the Anglo-Turkish Society, Cornucopia, LSE, museums and community pages. Always check the organiser's page before you go.
+    <a href="data/events.json">Raw data (JSON)</a></p>
+  </footer>
+
+  <script src="data/events.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
