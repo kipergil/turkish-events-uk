@@ -105,6 +105,13 @@
     const set = state.when !== "any";
     $("#whenField").classList.toggle("is-set", set);
     $("#whenClear").hidden = !set;
+    // Pill version of the same filter (shown when the visitor prefers pills)
+    $("#when").innerHTML = WHEN.map((w) => {
+      const n = w.range ? base.filter((e) => inRange(e, w.range().map(iso))).length : base.length;
+      const on = w.id === state.when;
+      const clearable = on && w.id !== "any";
+      return `<button class="chip${clearable ? " clearable" : ""}" aria-pressed="${on}" data-when="${w.id}"${w.hint && !clearable ? ` title="${w.hint}"` : ""}${clearable ? ` aria-label="${esc(w.label)}, ${n} events. Click to remove this filter"` : ""}>${esc(w.label)}<span class="n">${n}</span>${clearable ? X_SVG : ""}</button>`;
+    }).join("");
   }
 
   function renderChips() {
@@ -121,6 +128,26 @@
     $("#catField").classList.toggle("is-set", set);
     $("#catField").style.setProperty("--c", set ? cvar(state.cat) : "var(--muted)");
     $("#catClear").hidden = !set;
+    $("#chips").innerHTML = cats.map((c) => {
+      const on = c === state.cat;
+      const clearable = on && c !== "All";
+      const n = c === "All" ? base.length : counts[c] || 0;
+      return `<button class="chip${clearable ? " clearable" : ""}" aria-pressed="${on}" data-cat="${esc(c)}"${c !== "All" ? ` style="--c: ${cvar(c)}"` : ""}${clearable ? ` aria-label="${esc(c)}, ${n} events. Click to remove this filter"` : ""}>${c === "All" ? "All types" : dot(c) + esc(c)}<span class="n">${n}</span>${clearable ? X_SVG : ""}</button>`;
+    }).join("");
+  }
+
+  // ---------- filter style: dropdown menus or pills ----------
+  // A per-visitor preference, remembered in this browser only (menus by default).
+  const MODE_KEY = "tel.filterMode";
+  let filterMode = "menus";
+  try { if (localStorage.getItem(MODE_KEY) === "pills") filterMode = "pills"; } catch { /* storage blocked: use the default */ }
+  function applyFilterMode() {
+    document.body.classList.toggle("filters-pills", filterMode === "pills");
+    const next = filterMode === "pills" ? "menus" : "pills";
+    const btn = $("#modeBtn");
+    btn.querySelector(".mode-label").textContent = next === "pills" ? "Pills" : "Menus";
+    btn.setAttribute("aria-label", `Show filters as ${next === "pills" ? "pill buttons" : "dropdown menus"}`);
+    btn.title = btn.getAttribute("aria-label");
   }
 
   // ---------- cards ----------
@@ -442,6 +469,13 @@
   function render() {
     renderWhen();
     renderChips();
+    // On narrow screens the pill rows scroll sideways: keep the active pill in view.
+    if (filterMode === "pills") document.querySelectorAll(".chips").forEach((row) => {
+      const on = row.querySelector('[aria-pressed="true"]');
+      if (!on) return;
+      const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;
+      if (l < row.scrollLeft || r > row.scrollLeft + row.clientWidth) row.scrollLeft = l - 16;
+    });
     document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === state.view));
     $("#listView").hidden = state.view !== "list";
     $("#calView").hidden = state.view !== "calendar";
@@ -485,6 +519,21 @@
   // Escape clears the search too
   $("#q").addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#q").value) { e.preventDefault(); qClear.click(); } });
   $("#whenSel").addEventListener("change", (e) => setWhen(e.target.value));
+  // Pills: clicking the selected pill again clears it (back to any time / all types).
+  $("#chips").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    state.cat = b.dataset.cat === state.cat ? "All" : b.dataset.cat;
+    syncUrl(); render();
+  });
+  $("#when").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    setWhen(b.dataset.when === state.when ? "any" : b.dataset.when);
+  });
+  $("#modeBtn").addEventListener("click", () => {
+    filterMode = filterMode === "pills" ? "menus" : "pills";
+    try { localStorage.setItem(MODE_KEY, filterMode); } catch { /* not remembered, still switches */ }
+    applyFilterMode(); render();
+  });
   $("#catSel").addEventListener("change", (e) => { state.cat = e.target.value; syncUrl(); render(); });
   // The x beside a set filter clears it and hands focus back to its menu.
   $("#whenClear").addEventListener("click", () => { setWhen("any"); $("#whenSel").focus(); });
@@ -514,6 +563,7 @@
     $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
+  applyFilterMode();
   load().then(() => {
     renderKpis();
     const w = params.get("when");

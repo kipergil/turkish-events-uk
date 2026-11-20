@@ -184,6 +184,21 @@ button.kpi:focus-visible { outline-color: #fff; }
 .seg button[aria-selected="true"] { background: var(--cobalt); color: #fff; }
 @media (prefers-color-scheme: dark) { .seg button[aria-selected="true"] { color: #0F1730; } }
 
+/* filter style switch: dropdown menus (default) or pill rows */
+.pill-filters { display: none; gap: 6px; margin-top: 10px; }
+body.filters-pills .pill-filters { display: grid; }
+body.filters-pills .filters { display: none; }
+.mode-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex: none; height: 44px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--sheet);
+  color: var(--muted); font: inherit; font-size: .875rem; font-weight: 600; cursor: pointer;
+}
+.mode-btn:hover { border-color: var(--cobalt); color: var(--cobalt); }
+.mode-btn svg { width: 18px; height: 18px; }
+.mode-btn .ico-menus { display: none; }
+body.filters-pills .mode-btn .ico-menus { display: block; }
+body.filters-pills .mode-btn .ico-pills { display: none; }
+
 /* filter dropdowns sit in the search row */
 .filters { display: flex; gap: 10px; flex: none; }
 .select-field { position: relative; display: flex; align-items: center; width: 200px; }
@@ -470,7 +485,7 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
   /* phones: one full-width menu per row so the chosen option is never cut off */
   .filters { width: 100%; flex-direction: column; gap: 8px; }
   .select-field, .select-field#catField { flex: none; width: 100%; min-width: 0; }
-  .seg { width: 100%; }
+  .seg { flex: 1; width: auto; }
   .seg button { flex: 1; }
   .day { grid-template-columns: 1fr; gap: 10px; margin-top: 24px; }
   .date { position: static; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; padding: 0; }
@@ -519,4 +534,10 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
   .ev-actions { gap: 4px; }
   .act { padding: 0 8px; gap: 4px; }
   .act svg { width: 14px; height: 14px; }
+}
+
+/* very small phones: the filter-style switch shows its icon only (it keeps its aria-label) */
+@media (max-width: 380px) {
+  .mode-btn { padding: 0 11px; }
+  .mode-btn .mode-label { display: none; }
 }
