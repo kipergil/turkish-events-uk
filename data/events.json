@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-19T20:50+00:00",
- "count": 41,
+ "updated": "2026-11-20T13:09+00:00",
+ "count": 50,
  "events": [
   {
    "id": "eb-2003198664129",
@@ -183,6 +183,24 @@
    "lng": null
   },
   {
+   "id": "burhan-ocal-botvinov-sss-2026",
+   "title": "Burhan Öçal & Alexey Botvinov: Classics Reloaded",
+   "start": "2026-11-22",
+   "end": "2026-11-22",
+   "time": "16:00",
+   "endTime": "",
+   "venue": "Sinfonia Smith Square",
+   "online": false,
+   "area": "Westminster",
+   "address": "Smith Square, London SW1P 3HA",
+   "category": "Music",
+   "summary": "Darbuka master Burhan Öçal and pianist Alexey Botvinov reimagine three centuries of keyboard music in a London premiere.",
+   "url": "https://dearturkey.com/events/burhan-al-alexey-botvinov-classics-reloaded",
+   "source": "Dear Turkey",
+   "lat": 51.496092,
+   "lng": -0.126938
+  },
+  {
    "id": "eb-2003932583301",
    "title": "The Ones Who Stayed",
    "start": "2026-11-22",
@@ -251,6 +269,60 @@
    "category": "Exhibition",
    "summary": "How to Read Sculpture from the Medieval to the Baroque Period",
    "url": "https://www.eventbrite.co.uk/e/2004588920423",
+   "source": "Eventbrite"
+  },
+  {
+   "id": "eb-2005126251595",
+   "title": "Make Your Own Christmas Crackers with on the Water",
+   "start": "2026-11-25",
+   "end": "2026-11-25",
+   "time": "18:30",
+   "endTime": "19:45",
+   "venue": "TTA (Traditional Turkish Arts Platform)",
+   "area": "Lower Holloway",
+   "address": "North Road, N7 9DP",
+   "online": false,
+   "lat": 51.549409,
+   "lng": -0.119711,
+   "category": "Workshop",
+   "summary": "Create your own Christmas crackers with Ebru art! Explore colours, paint on water, and take home unique handmade festive decorations.",
+   "url": "https://www.eventbrite.co.uk/e/2005126251595",
+   "source": "Eventbrite"
+  },
+  {
+   "id": "fenerbahce-london-yilmaz-vural-breakfast",
+   "title": "Yılmaz Vural ile Maç Günü Kahvaltısı",
+   "start": "2026-11-25",
+   "end": "2026-11-25",
+   "time": "",
+   "endTime": "",
+   "venue": "Ev Restaurant",
+   "online": false,
+   "area": "Southwark",
+   "address": "97-99 Isabella Street, London SE1 8DD",
+   "category": "Community",
+   "summary": "Matchday breakfast with Yılmaz Vural, run by the London Fenerbahçe supporters' association, to watch Shakhtar Donetsk v Fenerbahçe. Register via fenerbahcelondon.co.uk.",
+   "url": "https://dearturkey.com/events/yilmaz-vural-ile-ma-g-n-kahvalt-si",
+   "source": "Dear Turkey",
+   "lat": 51.50418,
+   "lng": -0.105886
+  },
+  {
+   "id": "eb-1999849391364",
+   "title": "TURKEN ISLAMIC TALKS",
+   "start": "2026-11-26",
+   "end": "2026-11-26",
+   "time": "19:00",
+   "endTime": "20:30",
+   "venue": "TURKEN UK",
+   "area": "St. Giles's",
+   "address": "Ruskin House, WC1A 1LT",
+   "online": false,
+   "lat": 51.517859,
+   "lng": -0.125515,
+   "category": "Talk",
+   "summary": "Join us for a new fortnightly series with Ustadh Yaqub Muslim, exploring selected short sūrahs, Qur’anic passages, and foundational hadiths.",
+   "url": "https://www.eventbrite.co.uk/e/1999849391364",
    "source": "Eventbrite"
   },
   {
@@ -362,6 +434,24 @@
    "source": "Eventbrite"
   },
   {
+   "id": "birsen-tezer-finsbury-2026",
+   "title": "Birsen Tezer live in London",
+   "start": "2026-11-28",
+   "end": "2026-11-28",
+   "time": "19:00",
+   "endTime": "23:00",
+   "venue": "The Finsbury",
+   "online": false,
+   "area": "Finsbury Park",
+   "address": "336 Green Lanes, London N4 1BY",
+   "category": "Music",
+   "summary": "Turkish singer-songwriter Birsen Tezer plays jazz, folk and alternative pop with her band, with support from Sevtap Işık.",
+   "url": "https://dearturkey.com/events/birsen-tezer-london-mrktmtzz",
+   "source": "t-vine.com / Dear Turkey",
+   "lat": 51.571963,
+   "lng": -0.096264
+  },
+  {
    "id": "eb-2003858145656",
    "title": "Queer Meyhane",
    "start": "2026-11-28",
@@ -413,6 +503,24 @@
    "online": false,
    "lat": null,
    "lng": null
+  },
+  {
+   "id": "turkish-apparel-sourcing-london-2026",
+   "title": "Turkish Apparel/RTW Sourcing Meetings London 2026",
+   "start": "2026-11-30",
+   "end": "2026-11-30",
+   "time": "10:00",
+   "endTime": "",
+   "venue": "Sheraton Grand London Park Lane",
+   "online": false,
+   "area": "Mayfair",
+   "address": "Piccadilly, London W1J 7BX",
+   "category": "Business",
+   "summary": "Sourcing meetings connecting UK buyers with Turkish apparel and ready-to-wear manufacturers.",
+   "url": "https://www.eventbrite.com/e/turkish-apparelrtw-sourcing-meetings-london-2026-tickets-2003909281605",
+   "source": "Dear Turkey / Eventbrite",
+   "lat": 51.504977,
+   "lng": -0.147324
   },
   {
    "id": "ats-yassiada",
@@ -622,6 +730,24 @@
    "lng": -0.142017
   },
   {
+   "id": "eb-2005124504369",
+   "title": "TURKISH NIGHT",
+   "start": "2026-12-26",
+   "end": "2026-12-27",
+   "time": "20:00",
+   "endTime": "01:00",
+   "venue": "Yaz Restaurant",
+   "area": "Hale End",
+   "address": "7-9 Signal Walk, E4 9BW",
+   "online": false,
+   "lat": 51.607803,
+   "lng": -0.001491,
+   "category": "Party",
+   "summary": "26 Aralık Cumartesi günü YAZ Restaurant’ta müzik, dans ve eğlence dolu unutulmaz bir gece sizleri bekliyor.",
+   "url": "https://www.eventbrite.co.uk/e/2005124504369",
+   "source": "Eventbrite"
+  },
+  {
    "id": "eb-2004859404448",
    "title": "NEW YEARS EVE x HALODAYI",
    "start": "2026-12-31",
@@ -672,6 +798,24 @@
    "online": false,
    "lat": 51.502194,
    "lng": 0.002819
+  },
+  {
+   "id": "ferman-akgul-finsbury-2027",
+   "title": "Ferman Akgül live in London",
+   "start": "2027-01-30",
+   "end": "2027-01-30",
+   "time": "19:00",
+   "endTime": "",
+   "venue": "The Finsbury",
+   "online": false,
+   "area": "Finsbury Park",
+   "address": "336 Green Lanes, London N4 1BY",
+   "category": "Music",
+   "summary": "maNga frontman Ferman Akgül plays his hits on his UK & Ireland tour.",
+   "url": "https://dearturkey.com/events/ferman-akg-l-uk-ireland-tour-mq5ogr1l",
+   "source": "Dear Turkey",
+   "lat": 51.571963,
+   "lng": -0.096264
   },
   {
    "id": "eb-2001878717132",
@@ -726,6 +870,24 @@
    "summary": "Ahmet Bilge brings his sharp, hilarious take on Turkish life to the London stage—come laugh with us live!",
    "url": "https://www.eventbrite.co.uk/e/2004644143597",
    "source": "Eventbrite"
+  },
+  {
+   "id": "fazil-say-barbican-2027",
+   "title": "Fazıl Say Jazz Quintet",
+   "start": "2027-05-24",
+   "end": "2027-05-24",
+   "time": "20:00",
+   "endTime": "",
+   "venue": "Barbican Hall",
+   "online": false,
+   "area": "City of London",
+   "address": "Barbican Centre, Silk Street, London EC2Y 8DS",
+   "category": "Music",
+   "summary": "Pianist Fazıl Say and his jazz quintet play new works and jazz arrangements of his classical pieces.",
+   "url": "https://www.barbican.org.uk/whats-on/2027/event/fazil-say",
+   "source": "t-vine.com / Barbican",
+   "lat": 51.519961,
+   "lng": -0.094103
   }
  ]
 }
