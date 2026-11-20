@@ -242,14 +242,16 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 
 .sheet { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius-sheet); overflow: hidden; }
 .row {
-  display: grid; grid-template-columns: 72px 1fr auto; gap: 16px; align-items: start;
-  padding: 16px 18px;
+  display: grid; grid-template-columns: 112px 1fr; gap: 16px; align-items: start;
+  padding: 16px 18px 16px 20px;
 }
 .row + .row { border-top: 1px solid var(--line); }
 .row { box-shadow: inset 4px 0 0 var(--c, transparent); }
 .time { font-variant-numeric: tabular-nums; padding-top: 1px; }
 .time b { display: block; font-weight: 700; font-size: 1rem; }
-.time span { display: block; color: var(--muted); font-size: .8125rem; }
+.time > span:not(.ev-tag) { display: block; color: var(--muted); font-size: .8125rem; }
+/* the type sits under the time, in its own colour */
+.time .ev-tag { display: inline-flex; margin-top: 8px; font-size: .75rem; line-height: 1.25; align-items: center; max-width: 100%; white-space: nowrap; }
 .ev-main { min-width: 0; }
 .ev-title { margin: 0; font-size: 1.125rem; font-weight: 680; line-height: 1.3; letter-spacing: -.005em; }
 .ev-title a { text-decoration: none; }
@@ -265,15 +267,25 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 .ev-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 550; color: var(--ink); }
 .ev-tag.plain { color: var(--muted); font-weight: 450; }
 .ev-tag.cat { padding: 2px 9px 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--c, var(--c-culture)) 14%, transparent); }
-.ev-actions { display: flex; gap: 4px; align-items: center; }
-.view-btn {
-  display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; margin-right: 4px;
-  border-radius: 10px; background: var(--cobalt); color: #fff; text-decoration: none;
-  font-weight: 650; font-size: .875rem; white-space: nowrap;
+.ev-actions { display: flex; align-items: center; }
+/* one row of labelled actions under each event */
+.ev-actions { flex-wrap: nowrap; gap: 8px; margin-top: 12px; }
+.act {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; flex: none;
+  border-radius: 9px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink);
+  text-decoration: none; font-weight: 600; font-size: .8125rem; white-space: nowrap;
 }
-.view-btn svg { width: 15px; height: 15px; }
-.view-btn:hover { background: color-mix(in srgb, var(--cobalt) 86%, #000); }
-@media (prefers-color-scheme: dark) { .view-btn { color: #0F1730; } .view-btn:hover { background: color-mix(in srgb, var(--cobalt) 86%, #fff); } }
+.act svg { width: 16px; height: 16px; flex: none; color: var(--muted); }
+.act:hover { border-color: var(--cobalt); color: var(--cobalt); }
+.act:hover svg { color: inherit; }
+.act.primary { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
+.act.primary svg { color: inherit; width: 15px; height: 15px; }
+.act.primary:hover { background: color-mix(in srgb, var(--cobalt) 86%, #000); color: #fff; }
+@media (prefers-color-scheme: dark) {
+  .act.primary, .act.primary:hover { color: #0F1730; }
+  .act.primary:hover { background: color-mix(in srgb, var(--cobalt) 86%, #fff); }
+}
+.act .short { display: none; }
 .tile-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
 .tile-view { display: inline-flex; align-items: center; gap: 5px; font-size: .8125rem; font-weight: 650; color: var(--cobalt); white-space: nowrap; }
 .tile-view svg { width: 13px; height: 13px; }
@@ -393,8 +405,10 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
   .date-day, .date-month { display: inline; margin: 0; font-size: 1rem; }
   .date-month { color: var(--muted); }
   .rel { margin: 0 0 0 auto; }
-  .row { grid-template-columns: 54px 1fr; gap: 12px; padding: 14px; }
-  .ev-actions { grid-column: 2; margin: 4px 0 0; }
+  .row { grid-template-columns: 82px 1fr; gap: 12px; padding: 14px 14px 14px 16px; }
+  /* actions take the full card width so all three fit on one line */
+  .ev-actions { margin: 12px 0 0 -94px; gap: 6px; }
+  .act { height: 34px; padding: 0 10px; }
   .cell { min-height: 56px; align-items: center; padding: 4px 2px; }
   .cell .ev, .cell .more { display: none; }
   .cell .dots { display: flex; }
@@ -423,3 +437,13 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 .howto { margin: 8px 0 0; }
 .howto dt { font-weight: 700; margin-top: 14px; }
 .howto dd { margin: 2px 0 0; color: var(--ink); }
+
+@media (max-width: 480px) {
+  .act .long { display: none; }
+  .act .short { display: inline; }
+}
+@media (max-width: 360px) {
+  .ev-actions { gap: 4px; }
+  .act { padding: 0 8px; gap: 4px; }
+  .act svg { width: 14px; height: 14px; }
+}
