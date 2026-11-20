@@ -110,18 +110,22 @@ svg { display: block; }
   -webkit-mask-image: linear-gradient(100deg, transparent 0%, transparent 30%, #000 75%);
   mask-image: linear-gradient(100deg, transparent 0%, transparent 30%, #000 75%);
 }
-.masthead-inner { position: relative; padding-top: 44px; padding-bottom: 36px; }
+/* compact band: one-line title, tagline beneath, update time on the right */
+.masthead-inner {
+  position: relative; padding-top: 22px; padding-bottom: 20px;
+  display: grid; grid-template-columns: 1fr auto; column-gap: 24px; align-items: baseline;
+}
 h1 {
   margin: 0;
-  font-size: clamp(2.5rem, 7vw, 4.25rem);
+  font-size: clamp(1.75rem, 3.6vw, 2.5rem);
   font-weight: 760;
   font-variation-settings: "opsz" 96;
-  line-height: .98;
-  letter-spacing: -.035em;
+  line-height: 1.05;
+  letter-spacing: -.03em;
 }
-.lede { margin: 16px 0 0; max-width: 34rem; font-size: 1.0625rem; line-height: 1.5; opacity: .92; }
+.lede { grid-column: 1 / -1; grid-row: 2; margin: 6px 0 0; max-width: 46rem; font-size: .9688rem; line-height: 1.45; opacity: .92; }
 .lede span { display: block; opacity: .8; }
-.updated { margin: 18px 0 0; font-size: .875rem; opacity: .75; min-height: 1.3em; }
+.updated { grid-column: 2; grid-row: 1; margin: 0; font-size: .8125rem; opacity: .78; white-space: nowrap; }
 
 /* ---------- Controls ---------- */
 .controls {
@@ -177,8 +181,24 @@ h1 {
 .cats .chip { border-color: transparent; background: transparent; padding: 0 10px; }
 .cats .chip:hover { background: var(--sheet); border-color: var(--line); }
 .cats .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--porcelain); }
+/* a chosen type wears its own colour, so the filter, rows, calendar and pins all match */
+.cats .chip[aria-pressed="true"][style] {
+  background: color-mix(in srgb, var(--c) 16%, var(--sheet)); border-color: var(--c); color: var(--ink);
+}
+.cats .chip[aria-pressed="true"][style] .dot { box-shadow: none; }
+.chip .x { width: 14px; height: 14px; margin: 0 -3px 0 1px; opacity: .85; }
+.chip.clearable:hover .x { opacity: 1; }
 .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--c, var(--c-culture)); }
-.cats .chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px var(--porcelain); }
+.cats .chip[aria-pressed="true"]:not([style]) .dot { box-shadow: 0 0 0 2px var(--porcelain); }
+
+/* ---------- Results heading: says what the filters add up to ---------- */
+.results-head { margin-top: 22px; }
+.results-head h2 {
+  margin: 0; font-size: clamp(1.625rem, 3.6vw, 2.25rem); font-weight: 740; line-height: 1.1;
+  letter-spacing: -.025em; font-variation-settings: "opsz" 72;
+}
+.results-head p { margin: 6px 0 0; color: var(--muted); }
+.results-head + section > .strip:first-child, .results-head + section > .day:first-child { margin-top: 20px; }
 
 /* ---------- On now strip ---------- */
 main { padding-top: 8px; padding-bottom: 48px; outline: none; }
@@ -193,11 +213,12 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 }
 .tile {
   scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px;
-  background: var(--turquoise-tint); border-radius: var(--radius-sheet); padding: 16px;
+  background: color-mix(in srgb, var(--c, var(--turquoise)) 13%, var(--sheet)); border: 1px solid color-mix(in srgb, var(--c, var(--turquoise)) 30%, transparent); border-radius: var(--radius-sheet); padding: 16px;
   text-decoration: none; color: var(--ink); min-height: 150px;
 }
 .tile:hover .tile-title { text-decoration: underline; text-underline-offset: 3px; }
-.tile-until { color: var(--turquoise); font-weight: 650; font-size: .875rem; }
+.tile-until { color: color-mix(in srgb, var(--c, var(--turquoise)) 70%, var(--ink)); font-weight: 650; font-size: .875rem; }
+.tile .ev-tag { margin-top: 2px; font-size: .8125rem; align-self: flex-start; }
 .tile-title { font-weight: 680; font-size: 1.0625rem; line-height: 1.25; }
 .tile-where { color: var(--muted); font-size: .875rem; margin-top: auto; }
 
@@ -219,12 +240,13 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 }
 .rel.today { background: var(--red-tint); color: var(--red); }
 
-.sheet { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius-sheet); }
+.sheet { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius-sheet); overflow: hidden; }
 .row {
   display: grid; grid-template-columns: 72px 1fr auto; gap: 16px; align-items: start;
   padding: 16px 18px;
 }
 .row + .row { border-top: 1px solid var(--line); }
+.row { box-shadow: inset 4px 0 0 var(--c, transparent); }
 .time { font-variant-numeric: tabular-nums; padding-top: 1px; }
 .time b { display: block; font-weight: 700; font-size: 1rem; }
 .time span { display: block; color: var(--muted); font-size: .8125rem; }
@@ -242,6 +264,7 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 .ev-tags { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: .8125rem; color: var(--muted); }
 .ev-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 550; color: var(--ink); }
 .ev-tag.plain { color: var(--muted); font-weight: 450; }
+.ev-tag.cat { padding: 2px 9px 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--c, var(--c-culture)) 14%, transparent); }
 .ev-actions { display: flex; gap: 4px; }
 .icon-btn {
   display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 10px;
@@ -282,13 +305,13 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 .cell.inrange { background: color-mix(in srgb, var(--cobalt-tint) 55%, transparent); }
 .cell .ev {
   font-size: .75rem; line-height: 1.3; padding: 2px 6px; border-radius: 5px;
-  background: var(--cobalt-tint); color: var(--ink);
+  background: color-mix(in srgb, var(--c, var(--cobalt)) 15%, transparent); box-shadow: inset 3px 0 0 var(--c, var(--cobalt)); color: var(--ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.cell .ev b { font-weight: 650; color: var(--cobalt); font-variant-numeric: tabular-nums; }
+.cell .ev b { font-weight: 650; color: color-mix(in srgb, var(--c, var(--cobalt)) 70%, var(--ink)); font-variant-numeric: tabular-nums; }
 .cell .more { font-size: .75rem; color: var(--muted); padding-left: 6px; }
 .cell .dots { display: none; gap: 3px; justify-content: center; }
-.cell .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--cobalt); }
+.cell .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--c, var(--cobalt)); }
 .day-list { margin-top: 8px; }
 .day-list .section-title { margin: 28px 0 12px; }
 
@@ -300,11 +323,10 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 }
 .pin {
   width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
-  background: var(--cobalt); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(15, 23, 48, .35);
+  background: var(--c, var(--cobalt)); border: 2px solid #fff; box-shadow: 0 2px 6px rgba(15, 23, 48, .35);
   display: grid; place-items: center;
 }
 .pin span { transform: rotate(45deg); color: #fff; font: 700 12px/1 var(--font); }
-.pin.long { background: var(--turquoise); }
 @media (prefers-color-scheme: dark) { .pin span { color: #0F1730; } .pin { border-color: #0F1730; } }
 .cluster {
   display: grid; place-items: center; border-radius: 50%;
@@ -325,6 +347,7 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 .pop-list { max-height: 280px; overflow-y: auto; margin-top: 12px; border-top: 1px solid var(--line); }
 .pop-ev { padding: 12px 0; }
 .pop-ev + .pop-ev { border-top: 1px solid var(--line); }
+.pop-cat { display: inline-flex; align-items: center; gap: 6px; margin-top: 2px; font-size: .75rem; font-weight: 600; color: var(--muted); }
 .pop-when { color: var(--cobalt); font-weight: 650; font-size: .8125rem; font-variant-numeric: tabular-nums; }
 .pop-title { font-weight: 680; font-size: .9375rem; margin: 2px 0 4px; }
 .pop-title a { color: var(--ink) !important; text-decoration: none; }
@@ -345,7 +368,8 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 759px) {
-  .masthead-inner { padding-top: 32px; padding-bottom: 26px; }
+  .masthead-inner { padding-top: 18px; padding-bottom: 16px; grid-template-columns: 1fr; }
+  .updated { grid-column: 1; grid-row: 3; margin-top: 6px; white-space: normal; }
   .strip-head { display: block; }
   .section-note { margin-top: 2px; }
   .cal-head h2 { font-size: 1.375rem; }

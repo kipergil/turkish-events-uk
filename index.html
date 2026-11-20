@@ -3,8 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Turkish Events London</title>
-  <meta name="description" content="Turkish events in London, updated every morning: concerts, meyhane nights, talks, workshops, exhibitions, meetups and community events.">
+  <title>Turkish Events in London: the Daily Feed</title>
+  <meta name="description" content="The daily feed of Turkish events in London: concerts and club nights, meyhane, talks and workshops, film and theatre, football and other sport, festivals, exhibitions, faith, embassy and community events. Refreshed every morning.">
+  <meta property="og:title" content="Turkish Events in London: the Daily Feed">
+  <meta property="og:description" content="Concerts, club nights, talks, workshops, film, theatre, sport, festivals, exhibitions and community events for Turkish London, refreshed every morning.">
+  <meta property="og:type" content="website">
   <meta name="theme-color" content="#2348B8">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +22,8 @@
   <header class="masthead">
     <div class="lattice" aria-hidden="true"></div>
     <div class="wrap masthead-inner">
-      <h1>Turkish events<br>in London</h1>
-      <p class="lede">Concerts, meyhane nights, talks, films, matches and exhibitions, gathered every morning. <span lang="tr">Londra'daki Türk etkinlikleri.</span></p>
+      <h1>Turkish events in London</h1>
+      <p class="lede">The daily feed of Turkish events in London: concerts, club nights, talks, workshops, film, theatre, sport, festivals, exhibitions and community gatherings, refreshed every morning.</p>
       <p class="updated" id="updated"></p>
     </div>
   </header>
@@ -47,7 +50,10 @@
   </div>
 
   <main class="wrap" id="results" tabindex="-1">
-    <p class="sr" id="status" aria-live="polite"></p>
+    <div class="results-head">
+      <h2 id="headline" aria-live="polite"></h2>
+      <p id="subline"></p>
+    </div>
     <section id="listView"></section>
     <section id="calView" hidden>
       <div class="cal-head">
