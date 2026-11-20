@@ -137,10 +137,10 @@
   }
 
   // ---------- filter style: dropdown menus or pills ----------
-  // A per-visitor preference, remembered in this browser only (menus by default).
+  // A per-visitor preference, remembered in this browser only (pills by default).
   const MODE_KEY = "tel.filterMode";
-  let filterMode = "menus";
-  try { if (localStorage.getItem(MODE_KEY) === "pills") filterMode = "pills"; } catch { /* storage blocked: use the default */ }
+  let filterMode = "pills";
+  try { if (localStorage.getItem(MODE_KEY) === "menus") filterMode = "menus"; } catch { /* storage blocked: use the default */ }
   function applyFilterMode() {
     document.body.classList.toggle("filters-pills", filterMode === "pills");
     const next = filterMode === "pills" ? "menus" : "pills";
