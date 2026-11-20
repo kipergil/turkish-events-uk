@@ -33,6 +33,8 @@ SEARCH_TERMS = [
     # wider net: cinema, theatre, festivals, community, faith and official events
     "turkish-cinema", "turkish-theatre", "turkish-festival", "turkish-community",
     "turkish-language", "turkish-food", "turkish-embassy", "mevlevi", "alevi",
+    # sport: matches, watch parties, community leagues and tournaments
+    "turkish-football", "fenerbahce", "galatasaray", "besiktas", "turkish-sports",
 ]
 PAGES_PER_TERM = 3
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
@@ -48,7 +50,10 @@ RELEVANT = re.compile(
     r"sinema|tiyatro|karagöz|karagoz|hacivat|nasreddin|"
     # faith and community institutions specific to Turkish-speaking London
     r"mevlid|mevlit|kandil|kermes|süleymaniye|suleymaniye|aziziye|diyanet|cemevi|alevi|ilahi|tasavvuf|"
-    r"türkevi|halkevi|day-mer|büyükelçi|cumhuriyet bayram",
+    r"türkevi|halkevi|day-mer|büyükelçi|cumhuriyet bayram|"
+    # Turkish clubs and national teams
+    r"fenerbah[cç]e|galatasaray|be[sş]ikta[sş]|trabzonspor|ba[sş]ak[sş]ehir|samsunspor|g[oö]ztepe|"
+    r"anadolu efes|eczac[iı]ba[sş][iı]|vak[iı]fbank|ay-?y[iı]ld[iı]zl[iı]lar|milli tak[iı]m",
     re.I,
 )
 # Letters that only Turkish uses among the major Latin-script languages (ğ, dotless ı, dotted İ, ş).
@@ -58,6 +63,9 @@ IRRELEVANT = re.compile(
     r"christmas turkey|roast turkey|turkey dinner|turkey trot|cold turkey|turkey burner|turk'?s head", re.I)
 
 CATEGORIES = [  # first match wins, so the more specific kinds come first
+    ("Sport", r"football|futbol|soccer|\bmatch\b|\bmaç|basketball|basketbol|volleyball|voleybol|table tennis|masa tenisi|"
+              r"\btennis|boxing|\bboks|wrestling|güreş|\bufc\b|\bmma\b|kickbox|taekwondo|judo|karate|chess|satranç|"
+              r"tournament|turnuva|halı saha|five-a-side|5-a-side|watch party|maç izleme|derby|derbi|\bvs\.? |running club|marathon"),
     ("Official & embassy", r"embassy|consulate|consul general|ambassador|büyükelçi|high commission|republic day|"
                            r"cumhuriyet|national day|commemorat|anma|resepsiyon|official reception"),
     # "play" alone is left out: bands "play" too. Theatre needs a theatre word.
@@ -126,8 +134,8 @@ EVENTBRITE_FORMATS = {
 def eventbrite_category(r, title, summary, tags):
     fmt = next((t.get("display_name") for t in r.get("tags", []) if t.get("prefix") == "EventbriteFormat"), None)
     text_cat = categorize(f"{title} {summary}")
-    # Comedy, official and business events are clear from their wording even when the format says otherwise.
-    if text_cat in ("Theatre & comedy", "Official & embassy", "Business"):
+    # Sport, comedy, official and business events are clear from their wording even when the format says otherwise.
+    if text_cat in ("Sport", "Theatre & comedy", "Official & embassy", "Business"):
         return text_cat
     if fmt in EVENTBRITE_FORMATS:
         return EVENTBRITE_FORMATS[fmt]
@@ -191,16 +199,25 @@ def scrape_eventbrite():
     for term in SEARCH_TERMS:
         for page in range(1, PAGES_PER_TERM + 1):
             url = f"https://www.eventbrite.co.uk/d/united-kingdom--london/{term}/?page={page}"
-            try:
-                data = server_data(fetch(url))
-            except Exception as e:  # keep going: one bad page shouldn't sink the run
-                print(f"  ! {url}: {e}", file=sys.stderr)
-                break
+            # Eventbrite sometimes answers a burst of requests with an empty first page.
+            # Wait and ask again before treating the search as genuinely empty.
+            results, data = [], None
+            for attempt in range(3 if page == 1 else 1):
+                if attempt:
+                    time.sleep(5 * attempt)
+                try:
+                    data = server_data(fetch(url))
+                except Exception as e:  # keep going: one bad page shouldn't sink the run
+                    print(f"  ! {url}: {e}", file=sys.stderr)
+                    data = None
+                    continue
+                results = (((data or {}).get("search_data") or {}).get("events") or {}).get("results") or []
+                if results:
+                    break
             if data is None:
                 print(f"  ! {url}: no event data in page", file=sys.stderr)
                 break
             pages_ok += 1
-            results = (((data or {}).get("search_data") or {}).get("events") or {}).get("results") or []
             kept = 0
             for r in results:
                 ev = from_eventbrite(r)
@@ -210,11 +227,107 @@ def scrape_eventbrite():
             print(f"  {term} p{page}: {len(results)} results, {kept} Turkish")
             if not results or kept == 0:
                 break  # later pages only get less relevant
-            time.sleep(1)
+            time.sleep(1.5)
     if pages_ok == 0:
         # Every request failed (e.g. Eventbrite blocking this network). Writing a feed now would
         # silently drop every Eventbrite event from the site, so stop instead.
         raise EventbriteUnavailable("no Eventbrite search page could be loaded")
+    return list(found.values())
+
+
+# ---------- Sports fixtures (ESPN public scoreboard, no key) ----------
+# Turkish clubs and national teams that play a match in London: European away games,
+# "home" games played in London (e.g. Shakhtar Donetsk), and internationals at Wembley.
+FIXTURE_LEAGUES = {
+    "uefa.champions": "UEFA Champions League",
+    "uefa.europa": "UEFA Europa League",
+    "uefa.europa.conf": "UEFA Conference League",
+    "uefa.wchampions": "UEFA Women's Champions League",
+    "uefa.nations": "UEFA Nations League",
+    "uefa.euroq": "European Championship qualifier",
+    "fifa.worldq.uefa": "World Cup qualifier",
+    "fifa.friendly": "International friendly",
+    "fifa.friendly.w": "Women's international friendly",
+}
+FIXTURE_MONTHS_AHEAD = 5
+TURKISH_TEAM = re.compile(
+    r"galatasaray|fenerbah|be[sş]ikta[sş]|trabzon|ba[sş]ak[sş]ehir|samsun|g[oö]ztepe|kas[iı]mpa[sş]a|"
+    r"rizespor|sivasspor|konyaspor|alanyaspor|antalyaspor|kayserispor|ey[uü]pspor|kocaelispor|gaziantep|"
+    r"hatayspor|bodrum|^turkey\b|t[uü]rkiye", re.I)
+TEAM_SPELLING = {  # ESPN drops Turkish letters; put them back
+    "Fenerbahce": "Fenerbahçe", "Besiktas": "Beşiktaş", "Istanbul Basaksehir": "İstanbul Başakşehir",
+    "Basaksehir": "Başakşehir", "Goztepe": "Göztepe", "Kasimpasa": "Kasımpaşa", "Turkey": "Türkiye",
+    "Eyupspor": "Eyüpspor",
+}
+LONDON_STADIUMS = {  # venue -> (area, address)
+    "stamford bridge": ("Fulham", "Fulham Road, SW6 1HS"),
+    "wembley stadium": ("Wembley", "Wembley Stadium, HA9 0WS"),
+    "emirates stadium": ("Holloway", "Hornsey Road, N7 7AJ"),
+    "tottenham hotspur stadium": ("Tottenham", "782 High Road, N17 0BX"),
+    "london stadium": ("Stratford", "Queen Elizabeth Olympic Park, E20 2ST"),
+    "selhurst park": ("South Norwood", "Holmesdale Road, SE25 6PU"),
+    "craven cottage": ("Fulham", "Stevenage Road, SW6 6HH"),
+    "gtech community stadium": ("Brentford", "Lionel Road South, TW8 0RU"),
+    "brentford community stadium": ("Brentford", "Lionel Road South, TW8 0RU"),
+    "the valley": ("Charlton", "Floyd Road, SE7 8BL"),
+    "the den": ("Bermondsey", "Zampa Road, SE16 3LN"),
+}
+
+
+def fetch_json(url):
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "identity"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
+
+
+def scrape_fixtures():
+    """Upcoming matches in London involving a Turkish team. Failures are logged and skipped."""
+    found = {}
+    now = dt.datetime.now(LONDON)
+    months = []
+    y, m = now.year, now.month
+    for _ in range(FIXTURE_MONTHS_AHEAD):
+        months.append(f"{y}{m:02d}")
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    for league, comp in FIXTURE_LEAGUES.items():
+        for month in months:
+            url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{league}/scoreboard?dates={month}&limit=500"
+            try:
+                data = fetch_json(url)
+            except Exception as e:
+                print(f"  ! {league} {month}: {e}", file=sys.stderr)
+                continue
+            for ev in data.get("events", []):
+                comp_ = (ev.get("competitions") or [{}])[0]
+                venue = comp_.get("venue") or {}
+                vname = (venue.get("fullName") or "").strip()
+                city = ((venue.get("address") or {}).get("city") or "")
+                if "london" not in city.lower() and vname.lower() not in LONDON_STADIUMS:
+                    continue
+                sides = sorted(comp_.get("competitors") or [], key=lambda c: c.get("homeAway") != "home")
+                names = [TEAM_SPELLING.get(c["team"]["displayName"], c["team"]["displayName"]) for c in sides]
+                if len(names) != 2 or not any(TURKISH_TEAM.search(n) for n in names):
+                    continue
+                kickoff = dt.datetime.fromisoformat(ev["date"].replace("Z", "+00:00")).astimezone(LONDON)
+                area, address = LONDON_STADIUMS.get(vname.lower(), ("", ""))
+                link = next((l["href"] for l in ev.get("links", []) if "summary" in l.get("rel", []) or "gamecast" in l.get("rel", [])), "")
+                found[ev["id"]] = {
+                    "id": "fx-" + str(ev["id"]),
+                    "title": f"{names[0]} v {names[1]}",
+                    "start": kickoff.date().isoformat(),
+                    "end": kickoff.date().isoformat(),
+                    "time": kickoff.strftime("%H:%M"),
+                    "endTime": "",
+                    "venue": vname,
+                    "area": area,
+                    "address": address,
+                    "online": False,
+                    "category": "Sport",
+                    "summary": f"{comp} match in London. Tickets are sold by the home club; away sections are usually allocated through the visiting club.",
+                    "url": link,
+                    "source": "ESPN fixtures",
+                }
+    print(f"  {len(found)} London fixture(s) with a Turkish team")
     return list(found.values())
 
 
@@ -287,6 +400,9 @@ def main():
         print(f"ERROR: {e}. Feed left unchanged.", file=sys.stderr)
         sys.exit(3)
 
+    print("Fixtures:")
+    fixtures = scrape_fixtures()
+
     # data/excluded.json: ids or URLs of scraped events judged not Turkish enough.
     excluded_path = DATA / "excluded.json"
     excluded = set(json.loads(excluded_path.read_text())) if excluded_path.exists() else set()
@@ -300,7 +416,9 @@ def main():
         ev.setdefault("online", False)
         ev.setdefault("category", categorize(f"{ev['title']} {ev.get('summary', '')}"))
 
-    add_coordinates(curated, scraped)
+    # Fixtures have a postcode but no coordinates, so geocode them like curated events.
+    add_coordinates(curated + fixtures, scraped)
+    scraped = scraped + fixtures
 
     # Curated first so hand-checked details win over scraped duplicates.
     merged, seen_keys = [], set()
@@ -311,9 +429,12 @@ def main():
         # Same link on the same day is the same event. A shared link alone isn't: one news
         # article can announce several concerts.
         url_key = (ev.get("url"), ev["start"]) if ev.get("url") else None
-        if key in seen_keys or (url_key and url_key in seen_keys):
+        # Organisers sometimes post one event twice under slightly different titles
+        # (e.g. two listings of the same match screening): same day, time and venue is one event.
+        slot_key = (ev["start"], ev["time"], ev["venue"].lower()) if ev.get("time") and ev.get("venue") and not ev.get("online") else None
+        if key in seen_keys or (url_key and url_key in seen_keys) or (slot_key and slot_key in seen_keys):
             continue
-        seen_keys.update({key, url_key})
+        seen_keys.update({key, url_key, slot_key})
         merged.append(ev)
 
     merged.sort(key=lambda e: (e["start"], e.get("time") or "99:99", e["title"]))
@@ -325,7 +446,8 @@ def main():
         "// Generated by scripts/update_events.py - do not edit by hand.\n"
         "window.EVENTS_DATA = " + json.dumps(feed, ensure_ascii=False) + ";\n"
     )
-    print(f"Wrote {len(merged)} events ({len(scraped)} from Eventbrite, {len(curated)} curated).")
+    print(f"Wrote {len(merged)} events ({len(scraped) - len(fixtures)} from Eventbrite, "
+          f"{len(fixtures)} fixtures, {len(curated)} curated).")
 
 
 if __name__ == "__main__":

@@ -58,6 +58,19 @@ Work through every group below. Within a group, check the sources that are most 
 - Türkiye Tourism (GoTürkiye), Turkish Airlines and Turkish trade bodies (DEİK, MÜSİAD UK, TÜSİAD UK) for receptions and promotions
 - National days and commemorations: 29 October (Republic Day), 10 November (Atatürk commemoration), 23 April, 19 May, 30 August, 18 March (Çanakkale). Many are invitation-only; list only public ones.
 
+### Sport
+
+The script already finds football matches in London involving a Turkish club or the national team (Champions League, Europa League, Conference League, women's Champions League, Nations League, qualifiers and friendlies), and Eventbrite match screenings. Check the rest by hand:
+
+- **Football screenings and fan meet-ups:** Galatasaray, Fenerbahçe, Beşiktaş and Trabzonspor supporters' groups in London, and screenings at BOXPARK, Turkish restaurants and bars (search "maç izleme Londra", "watch party Galatasaray London").
+- **Basketball:** EuroLeague, EuroCup and Basketball Champions League games between Turkish clubs (Anadolu Efes, Fenerbahçe Beko, Galatasaray, Beşiktaş, Türk Telekom, Bahçeşehir) and London teams such as the London Lions. Also Turkish players in exhibition games at the O2.
+- **Volleyball:** CEV competitions with Turkish clubs (VakıfBank, Eczacıbaşı, Fenerbahçe, Halkbank) playing in London, and national team friendlies.
+- **Table tennis, tennis, wrestling, judo and taekwondo:** WTT and ETTU events, Queen's and Wimbledon (Turkish players), and London open tournaments with Turkish entrants.
+- **Combat sports:** boxing, kickboxing and MMA cards in London (O2, York Hall, Copper Box) with Turkish or Turkish Cypriot fighters.
+- **Community sport:** the Turkish Community Football Federation (TCFF) leagues, cup and its 19 Mayıs tournament (White Hart Lane Community Sports Centre), other Turkish and Turkish Cypriot football leagues and tournaments in north London, five-a-side and halı saha groups, running clubs, chess clubs and charity runs.
+
+Only list matches with a confirmed London venue and date. For screenings, the venue must be in London and the event public.
+
 ### Community and diaspora
 
 - Turkish Cypriot groups: CTCA UK, Turkish Cypriot Community Association, TWPA
@@ -92,7 +105,7 @@ For each event that is **not** already in `data/events.json`, add an object to `
   "address": "Street, postcode",
   "lat": 51.5,
   "lng": -0.12,
-  "category": "Music | Party | Talk | Workshop | Exhibition | Film | Theatre & comedy | Faith & spiritual | Festival | Official & embassy | Business | Community | Food & drink | Culture",
+  "category": "Music | Party | Talk | Workshop | Exhibition | Film | Theatre & comedy | Sport | Faith & spiritual | Festival | Official & embassy | Business | Community | Food & drink | Culture",
   "summary": "One or two plain sentences.",
   "url": "Most specific event or ticket page",
   "source": "Where you found it"

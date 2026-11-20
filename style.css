@@ -32,6 +32,7 @@
   --c-comedy: #B03A6B;
   --c-faith: #8A5A12;
   --c-official: #3A4A6B;
+  --c-sport: #1A7FBF;
   --c-culture: #566079;
 
   --radius-sheet: 14px;
@@ -68,6 +69,7 @@
     --c-comedy: #F08DB6;
     --c-faith: #E2B36A;
     --c-official: #B4C2E0;
+    --c-sport: #79C6F2;
     --c-culture: #A6AEC6;
     color-scheme: dark;
   }
