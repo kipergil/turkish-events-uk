@@ -81,6 +81,8 @@ Only list matches with a confirmed London venue and date. For screenings, the ve
 
 ### Aggregators and concert listings
 
+- Londra Kültür Kulübü (londrakultur.co.uk/etkinlikler): read automatically by the script. Check it by hand only if the run log shows an error for it.
+
 - TurkishAgenda (turkishagenda.co.uk/events). Its dates have no year, so check the weekday matches before you trust the year.
 - Turkish-language London press: Avrupa Gazete, Londra Gazete, Olay Gazete, Eurovizyon. Look for concert round-ups such as "Londra'da konser takvimi".
 - Touring Turkish artists: search Songkick, Ents24 and Bandsintown for "London" plus the artist, and check AXS, Ticketmaster and eventurk.com.

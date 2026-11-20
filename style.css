@@ -148,6 +148,17 @@ h1 {
   background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius-control);
 }
 .search input::placeholder { color: var(--muted); }
+/* our own clear button, so every browser gets the same x (native ones differ or are missing) */
+.search input { padding-right: 44px; }
+.search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+.search-clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 32px; display: grid; place-items: center; padding: 0;
+  border: 0; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer;
+}
+.search-clear svg { position: static; transform: none; width: 16px; height: 16px; color: inherit; pointer-events: none; }
+.search-clear:hover { background: var(--cobalt-tint); color: var(--cobalt); }
+.search-clear[hidden] { display: none; }
 .search input:focus { outline: none; border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-tint); }
 .seg { display: inline-flex; flex: none; padding: 3px; gap: 2px; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius-control); }
 .seg button {
@@ -286,6 +297,7 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
   .act.primary:hover { background: color-mix(in srgb, var(--cobalt) 86%, #fff); }
 }
 .act .short { display: none; }
+.act.primary { margin-left: auto; }
 .tile-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
 .tile-view { display: inline-flex; align-items: center; gap: 5px; font-size: .8125rem; font-weight: 650; color: var(--cobalt); white-space: nowrap; }
 .tile-view svg { width: 13px; height: 13px; }
