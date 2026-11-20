@@ -39,6 +39,8 @@
     any: "coming up", today: "today", tomorrow: "tomorrow", weekend: "this weekend",
     week: "this week", nextweek: "next week", month: "this month",
   };
+  // Short names for the narrow type tag under the time (filters keep the full names).
+  const TAG_LABEL = { "Theatre & comedy": "Theatre", "Faith & spiritual": "Faith", "Official & embassy": "Official", "Food & drink": "Food" };
   const X_SVG = '<svg class="x" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5l7 7m0-7l-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 
   const state = { q: "", cat: "All", when: "any", view: "list", month: new Date(today.getFullYear(), today.getMonth(), 1), sel: todayIso };
@@ -155,32 +157,36 @@
 
   const place = (e) => (e.online ? "Online" : [e.venue, e.area].filter(Boolean).join(", "));
 
+  const EXT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></svg>';
+
+  // "View event" opens the organiser's own page, which is the place to confirm details and buy tickets.
   function actions(e) {
     return `<div class="ev-actions">
-      <a class="icon-btn" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" title="Add to Google Calendar" aria-label="Add ${esc(e.title)} to Google Calendar">${CAL_SVG}</a>
-      ${hasPlace(e) ? `<a class="icon-btn" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open venue in Google Maps" aria-label="Open ${esc(e.venue || "venue")} in Google Maps">${MAP_SVG}</a>` : ""}
+      ${e.url ? `<a class="act primary" href="${esc(e.url)}" target="_blank" rel="noopener" aria-label="View event: ${esc(e.title)} (opens the organiser's page)">${EXT_SVG}View event</a>` : ""}
+      <a class="act" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" aria-label="Add ${esc(e.title)} to Google Calendar">${CAL_SVG}<span class="long">Add to calendar</span><span class="short" aria-hidden="true">Calendar</span></a>
+      ${hasPlace(e) ? `<a class="act" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" aria-label="Open ${esc(e.venue || "the venue")} in Google Maps">${MAP_SVG}<span class="long">Venue on map</span><span class="short" aria-hidden="true">Map</span></a>` : ""}
     </div>`;
   }
 
   // One event in the agenda: time, then what/where, then quiet icon actions. The title is the link.
   function row(e) {
     const long = spanDays(e) >= 2;
+    // Start time only; running exhibitions show when they close instead.
     const time = long
       ? `<b>Until</b><span>${esc(fmtShort.format(parse(e.end)))}</span>`
-      : `<b>${esc(e.time || "All day")}</b>${e.endTime ? `<span>to ${esc(e.endTime)}</span>` : ""}`;
+      : `<b>${esc(e.time || "All day")}</b>`;
     const title = e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title);
     const where = hasPlace(e)
       ? `<a href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener">${esc(place(e))}</a>`
       : esc(place(e));
     return `<article class="row" style="--c: ${cvar(e.category)}">
-      <div class="time">${time}</div>
+      <div class="time">${time}<span class="ev-tag cat" title="${esc(e.category)}">${dot(e.category)}${esc(TAG_LABEL[e.category] || e.category)}</span></div>
       <div class="ev-main">
         <h3 class="ev-title">${title}</h3>
         ${where ? `<div class="ev-where">${where}</div>` : ""}
         ${e.summary ? `<p class="ev-sum">${esc(e.summary)}</p>` : ""}
-        <div class="ev-tags"><span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>${e.online ? '<span class="ev-tag plain">Online</span>' : ""}</div>
+        ${actions(e)}
       </div>
-      ${actions(e)}
     </article>`;
   }
 
@@ -189,7 +195,7 @@
     const inner = `<span class="tile-until">${e.start > todayIso ? `From ${esc(fmtShort.format(parse(e.start)))} to` : "Until"} ${esc(fmtShort.format(parse(e.end)))}</span>
       <span class="tile-title">${esc(e.title)}</span>
       <span class="tile-where">${esc(place(e))}</span>
-      <span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>`;
+      <span class="tile-foot"><span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>${e.url ? `<span class="tile-view">View event${EXT_SVG}</span>` : ""}</span>`;
     const style = `style="--c: ${cvar(e.category)}"`;
     return e.url
       ? `<a class="tile" ${style} href="${esc(e.url)}" target="_blank" rel="noopener">${inner}</a>`
@@ -339,7 +345,7 @@
         <div class="pop-title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
         ${e.summary ? `<div class="pop-sum">${esc(e.summary.length > 140 ? e.summary.slice(0, 140) + "…" : e.summary)}</div>` : ""}
         <div class="pop-actions">
-          ${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">Event page</a>` : ""}
+          ${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">View event</a>` : ""}
           <a href="${esc(gcalLink(e))}" target="_blank" rel="noopener">Add to calendar</a>
         </div>
       </div>`).join("");
