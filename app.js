@@ -93,15 +93,18 @@
   }
   const visible = () => filtered();
 
-  // ---------- chips ----------
+  // ---------- filter dropdowns ----------
+  // Native <select>s: keyboard, screen-reader and phone pickers work out of the box.
+  // Each option shows its live count; the type menu's dot shows the selected type's colour.
   function renderWhen() {
     const base = filtered(["when"]);
-    $("#when").innerHTML = WHEN.map((w) => {
+    $("#whenSel").innerHTML = WHEN.map((w) => {
       const n = w.range ? base.filter((e) => inRange(e, w.range().map(iso))).length : base.length;
-      const on = w.id === state.when;
-      const clearable = on && w.id !== "any";
-      return `<button class="chip${clearable ? " clearable" : ""}" aria-pressed="${on}" data-when="${w.id}"${w.hint && !clearable ? ` title="${w.hint}"` : ""}${clearable ? ` aria-label="${esc(w.label)}, ${n} events. Click to remove this filter"` : ""}>${esc(w.label)}<span class="n">${n}</span>${clearable ? X_SVG : ""}</button>`;
+      return `<option value="${w.id}"${w.id === state.when ? " selected" : ""}>${esc(w.label)}: ${n}</option>`;
     }).join("");
+    const set = state.when !== "any";
+    $("#whenField").classList.toggle("is-set", set);
+    $("#whenClear").hidden = !set;
   }
 
   function renderChips() {
@@ -109,13 +112,15 @@
     const counts = {};
     base.forEach((e) => (counts[e.category] = (counts[e.category] || 0) + 1));
     const cats = ["All", ...Object.keys(counts).sort((a, b) => counts[b] - counts[a])];
-    if (state.cat !== "All" && !counts[state.cat]) cats.push(state.cat); // keep the active chip visible at 0
-    $("#chips").innerHTML = cats.map((c) => {
-      const on = c === state.cat;
-      const clearable = on && c !== "All";
+    if (state.cat !== "All" && !counts[state.cat]) cats.push(state.cat); // keep the active choice listed at 0
+    $("#catSel").innerHTML = cats.map((c) => {
       const n = c === "All" ? base.length : counts[c] || 0;
-      return `<button class="chip${clearable ? " clearable" : ""}" aria-pressed="${on}" data-cat="${esc(c)}"${c !== "All" ? ` style="--c: ${cvar(c)}"` : ""}${clearable ? ` aria-label="${esc(c)}, ${n} events. Click to remove this filter"` : ""}>${c === "All" ? "All types" : dot(c) + esc(c)}<span class="n">${n}</span>${clearable ? X_SVG : ""}</button>`;
+      return `<option value="${esc(c)}"${c === state.cat ? " selected" : ""}>${c === "All" ? "All types" : esc(c)}: ${n}</option>`;
     }).join("");
+    const set = state.cat !== "All";
+    $("#catField").classList.toggle("is-set", set);
+    $("#catField").style.setProperty("--c", set ? cvar(state.cat) : "var(--muted)");
+    $("#catClear").hidden = !set;
   }
 
   // ---------- cards ----------
@@ -437,13 +442,6 @@
   function render() {
     renderWhen();
     renderChips();
-    // On narrow screens the chip rows scroll sideways: keep the active chip in view.
-    document.querySelectorAll(".chips").forEach((row) => {
-      const on = row.querySelector('[aria-pressed="true"]');
-      if (!on) return;
-      const l = on.offsetLeft - row.offsetLeft, r = l + on.offsetWidth;
-      if (l < row.scrollLeft || r > row.scrollLeft + row.clientWidth) row.scrollLeft = l - 16;
-    });
     document.querySelectorAll(".seg button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === state.view));
     $("#listView").hidden = state.view !== "list";
     $("#calView").hidden = state.view !== "calendar";
@@ -486,16 +484,11 @@
   });
   // Escape clears the search too
   $("#q").addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#q").value) { e.preventDefault(); qClear.click(); } });
-  // Clicking the selected filter again clears it (back to all types / any time).
-  $("#chips").addEventListener("click", (e) => {
-    const b = e.target.closest(".chip"); if (!b) return;
-    state.cat = b.dataset.cat === state.cat ? "All" : b.dataset.cat;
-    syncUrl(); render();
-  });
-  $("#when").addEventListener("click", (e) => {
-    const b = e.target.closest(".chip"); if (!b) return;
-    setWhen(b.dataset.when === state.when ? "any" : b.dataset.when);
-  });
+  $("#whenSel").addEventListener("change", (e) => setWhen(e.target.value));
+  $("#catSel").addEventListener("change", (e) => { state.cat = e.target.value; syncUrl(); render(); });
+  // The x beside a set filter clears it and hands focus back to its menu.
+  $("#whenClear").addEventListener("click", () => { setWhen("any"); $("#whenSel").focus(); });
+  $("#catClear").addEventListener("click", () => { state.cat = "All"; syncUrl(); render(); $("#catSel").focus(); });
   $("#listView").addEventListener("click", (e) => { const b = e.target.closest("[data-when]"); if (b) setWhen(b.dataset.when); });
   document.querySelector(".seg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setView(b.dataset.view); });
   $("#prevMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); render(); });
