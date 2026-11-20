@@ -157,14 +157,25 @@
 
   const place = (e) => (e.online ? "Online" : [e.venue, e.area].filter(Boolean).join(", "));
 
+  // Outbound event links carry the two UTM tags analytics tools need to credit the visit to us:
+  // utm_source (who sent it) and utm_medium (what kind of link). Calendar/Maps links stay untagged.
+  const UTM = { utm_source: "turkish-events-london", utm_medium: "referral" };
+  function eventUrl(raw) {
+    try {
+      const u = new URL(raw);
+      for (const [k, v] of Object.entries(UTM)) if (!u.searchParams.has(k)) u.searchParams.set(k, v);
+      return u.toString();
+    } catch { return raw; }
+  }
+
   const EXT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></svg>';
 
-  // "View event" opens the organiser's own page, which is the place to confirm details and buy tickets.
+  // "View" (far right) opens the organiser's own page, which is the place to confirm details and buy tickets.
   function actions(e) {
     return `<div class="ev-actions">
-      ${e.url ? `<a class="act primary" href="${esc(e.url)}" target="_blank" rel="noopener" aria-label="View event: ${esc(e.title)} (opens the organiser's page)">${EXT_SVG}View event</a>` : ""}
       <a class="act" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" aria-label="Add ${esc(e.title)} to Google Calendar">${CAL_SVG}<span class="long">Add to calendar</span><span class="short" aria-hidden="true">Calendar</span></a>
       ${hasPlace(e) ? `<a class="act" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" aria-label="Open ${esc(e.venue || "the venue")} in Google Maps">${MAP_SVG}<span class="long">Venue on map</span><span class="short" aria-hidden="true">Map</span></a>` : ""}
+      ${e.url ? `<a class="act primary" href="${esc(eventUrl(e.url))}" target="_blank" rel="noopener" aria-label="View event: ${esc(e.title)} (opens the organiser's page)">View${EXT_SVG}</a>` : ""}
     </div>`;
   }
 
@@ -175,7 +186,7 @@
     const time = long
       ? `<b>Until</b><span>${esc(fmtShort.format(parse(e.end)))}</span>`
       : `<b>${esc(e.time || "All day")}</b>`;
-    const title = e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title);
+    const title = e.url ? `<a href="${esc(eventUrl(e.url))}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title);
     const where = hasPlace(e)
       ? `<a href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener">${esc(place(e))}</a>`
       : esc(place(e));
@@ -195,10 +206,10 @@
     const inner = `<span class="tile-until">${e.start > todayIso ? `From ${esc(fmtShort.format(parse(e.start)))} to` : "Until"} ${esc(fmtShort.format(parse(e.end)))}</span>
       <span class="tile-title">${esc(e.title)}</span>
       <span class="tile-where">${esc(place(e))}</span>
-      <span class="tile-foot"><span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>${e.url ? `<span class="tile-view">View event${EXT_SVG}</span>` : ""}</span>`;
+      <span class="tile-foot"><span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>${e.url ? `<span class="tile-view">View${EXT_SVG}</span>` : ""}</span>`;
     const style = `style="--c: ${cvar(e.category)}"`;
     return e.url
-      ? `<a class="tile" ${style} href="${esc(e.url)}" target="_blank" rel="noopener">${inner}</a>`
+      ? `<a class="tile" ${style} href="${esc(eventUrl(e.url))}" target="_blank" rel="noopener">${inner}</a>`
       : `<div class="tile" ${style}>${inner}</div>`;
   }
 
@@ -342,10 +353,10 @@
     const items = evs.map((e) => `<div class="pop-ev">
         <div class="pop-when">${esc(whenText(e))}</div>
         <div class="pop-cat">${dot(e.category)}${esc(e.category)}</div>
-        <div class="pop-title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
+        <div class="pop-title">${e.url ? `<a href="${esc(eventUrl(e.url))}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
         ${e.summary ? `<div class="pop-sum">${esc(e.summary.length > 140 ? e.summary.slice(0, 140) + "…" : e.summary)}</div>` : ""}
         <div class="pop-actions">
-          ${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">View event</a>` : ""}
+          ${e.url ? `<a href="${esc(eventUrl(e.url))}" target="_blank" rel="noopener">View</a>` : ""}
           <a href="${esc(gcalLink(e))}" target="_blank" rel="noopener">Add to calendar</a>
         </div>
       </div>`).join("");
@@ -446,7 +457,14 @@
     render();
   }
 
-  $("#q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
+  const qClear = $("#qClear");
+  const syncClear = () => { qClear.hidden = !$("#q").value; };
+  $("#q").addEventListener("input", (e) => { state.q = e.target.value; syncClear(); render(); });
+  qClear.addEventListener("click", () => {
+    $("#q").value = ""; state.q = ""; syncClear(); render(); $("#q").focus();
+  });
+  // Escape clears the search too
+  $("#q").addEventListener("keydown", (e) => { if (e.key === "Escape" && $("#q").value) { e.preventDefault(); qClear.click(); } });
   // Clicking the selected filter again clears it (back to all types / any time).
   $("#chips").addEventListener("click", (e) => {
     const b = e.target.closest(".chip"); if (!b) return;
