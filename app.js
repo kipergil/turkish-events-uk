@@ -247,6 +247,8 @@
     const groups = new Map();
     rest.forEach((e) => { if (!groups.has(e.start)) groups.set(e.start, []); groups.get(e.start).push(e); });
     let html = "";
+    for (const [d, evs] of groups) html += dayBlock(d, evs);
+    // Running exhibitions and courses go last, after the dated events.
     if (ongoing.length) {
       html += `<section class="strip" aria-labelledby="strip-title">
         <div class="strip-head">
@@ -256,7 +258,6 @@
         <div class="tiles">${ongoing.map(tile).join("")}</div>
       </section>`;
     }
-    for (const [d, evs] of groups) html += dayBlock(d, evs);
     $("#listView").innerHTML = html;
   }
 
@@ -265,6 +266,26 @@
     const what = state.cat === "All" ? "Exhibitions and courses" : CAT_PHRASE[state.cat] || state.cat;
     if (from === todayIso) return state.when === "any" ? `${what} on now` : `${what} on ${WHEN_PHRASE[state.when]}`;
     return `${what} still running ${WHEN_PHRASE[state.when]}`;
+  }
+
+  // ---------- KPI boxes (whole feed, not the current filters) ----------
+  function renderKpis() {
+    const weekend = WHEN.find((w) => w.id === "weekend").range().map(iso);
+    const inPerson = events.filter((e) => !e.online);
+    const n = {
+      all: events.length,
+      weekend: events.filter((e) => inRange(e, weekend)).length,
+      venues: new Set(inPerson.map((e) => (e.venue || "").trim().toLowerCase()).filter(Boolean)).size,
+      areas: new Set(inPerson.map((e) => (e.area || "").trim().toLowerCase()).filter(Boolean)).size,
+    };
+    const box = (value, label, action) => action
+      ? `<li><button class="kpi" type="button" data-kpi="${action}"><b>${value}</b><span>${label}</span></button></li>`
+      : `<li><div class="kpi"><b>${value}</b><span>${label}</span></div></li>`;
+    $("#kpis").innerHTML =
+      box(n.all, "upcoming events", "all") +
+      box(n.weekend, "this weekend", "weekend") +
+      box(n.venues, "venues", "") +
+      box(n.areas, "London areas", "");
   }
 
   // ---------- results heading ----------
@@ -493,7 +514,15 @@
   if (["calendar", "map"].includes(params.get("view"))) state.view = params.get("view");
   else if (location.hash === "#calendar") state.view = "calendar";
   if (params.get("cat")) state.cat = params.get("cat");
+  $("#kpis").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-kpi]"); if (!b) return;
+    if (b.dataset.kpi === "all") { state.cat = "All"; state.q = ""; $("#q").value = ""; syncClear(); setWhen("any"); }
+    if (b.dataset.kpi === "weekend") setWhen("weekend");
+    $("#results").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
   load().then(() => {
+    renderKpis();
     const w = params.get("when");
     if (w && WHEN.some((x) => x.id === w)) setWhen(w); else render();
   });
