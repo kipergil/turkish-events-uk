@@ -71,17 +71,19 @@ CATEGORIES = [  # first match wins, so the more specific kinds come first
     # "play" alone is left out: bands "play" too. Theatre needs a theatre word.
     ("Theatre & comedy", r"comedy|stand-up|stand up|theatre|theater|tiyatro|stage play|opera|ballet|karagöz|karagoz|shadow pupp"),
     ("Business", r"business|b2b|expo\b|supplier|sourcing|networking|entrepreneur|investor|trade|startup|founder|tech"),
-    ("Talk", r"talk|lecture|presentation|seminar|panel|conference|book launch|in conversation|symposium|webinar|reading"),
+    ("Talk", r"talk|lecture|presentation|seminar|panel|conference|book launch|in conversation|symposium|webinar|reading|"
+             r"söyleşi|soyleşi|konferans|sunum|kitap tanıtım|imza günü"),
     ("Film", r"film|cinema|sinema|screening|movie|documentary"),
     ("Festival", r"festival|\bfair\b|bazaar|şenlik|carnival|karnaval|kermes|street party"),
-    ("Exhibition", r"exhibition|gallery|museum|\btour\b|installation|on view|retrospective"),
+    ("Exhibition", r"exhibition|gallery|museum|\btour\b|installation|on view|retrospective|sergi|galeri|müze"),
     ("Workshop", r"workshop|class|course|lesson|masterclass|atölye|atolye|learn|craft|ebru|calligraphy|mosaic"),
     ("Party", r"party|club|night|dj|rave|house|disco|dance|eve\b|gala|meyhane|parti"),
     ("Music", r"concert|music|live|band|sing|recital|sufi|sema|jazz|orchestra|konser|şarkı|acoustic|performance|listening"),
     ("Faith & spiritual", r"mosque|camii|cami\b|mevlid|mevlit|kandil|iftar|ramazan|ramadan|\beid\b|bayram|cemevi|semah|"
                           r"prayer|\bdua\b|quran|kuran|ilahi|tasavvuf|sohbet|religio|spiritual"),
     ("Food & drink", r"coffee|food|dinner|brunch|breakfast|kahvaltı|tasting|cook|supper|kebab|baklava|wine|rakı|raki"),
-    ("Community", r"meet|meetup|social|community|reception|celebrat|charity|fundrais|picnic|family|kids|children"),
+    ("Community", r"meet|meetup|social|community|reception|celebrat|charity|fundrais|picnic|family|kids|children|"
+                  r"buluşma|tanışma|sohbet|dernek|piknik"),
 ]
 
 
@@ -331,6 +333,71 @@ def scrape_fixtures():
     return list(found.values())
 
 
+# ---------- Londra Kültür Kulübü (londrakultur.co.uk) ----------
+# A London culture club that posts Turkish-language meet-ups (exhibition visits, film and talk
+# evenings). Its events page lists each event as a card:
+#   <article class="card"> <h2><a href=LINK>TITLE</a></h2>
+#   <div class="meta"><span>22 Kasım 2026 · 14:00 (Londra)</span><span>VENUE · ADDRESS</span><span>NOTE</span></div>
+#   <p>SUMMARY</p> </article>
+LONDRAKULTUR_URL = "https://londrakultur.co.uk/etkinlikler/"
+TR_MONTHS = {"ocak": 1, "şubat": 2, "subat": 2, "mart": 3, "nisan": 4, "mayıs": 5, "mayis": 5, "haziran": 6,
+             "temmuz": 7, "ağustos": 8, "agustos": 8, "eylül": 9, "eylul": 9, "ekim": 10, "kasım": 11,
+             "kasim": 11, "aralık": 12, "aralik": 12}
+TR_DATE = re.compile(r"(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(\d{4})(?:\s*[·\-–,]\s*(\d{1,2})[:.](\d{2}))?")
+
+
+def scrape_londrakultur():
+    """Events from londrakultur.co.uk. Any failure is logged and the source is skipped."""
+    found = []
+    for page in range(1, 6):
+        url = LONDRAKULTUR_URL if page == 1 else f"{LONDRAKULTUR_URL}page/{page}/"
+        try:
+            page_html = fetch(url)
+        except Exception as e:
+            if page == 1:
+                print(f"  ! {url}: {e}", file=sys.stderr)
+            break  # a missing page 2 just means there is only one page
+        cards = re.findall(r'<article class="card">(.*?)</article>', page_html, re.S)
+        if not cards:
+            break
+        for card in cards:
+            link = re.search(r'<h2><a href="([^"]+)">(.*?)</a></h2>', card, re.S)
+            spans = [clean(re.sub(r"<[^>]+>", " ", x)) for x in re.findall(r"<span>(.*?)</span>", card, re.S)]
+            summary = re.search(r"</div>\s*<p>(.*?)</p>", card, re.S)
+            if not link or not spans:
+                continue
+            m = TR_DATE.search(spans[0])
+            month = TR_MONTHS.get(m.group(2).lower()) if m else None
+            if not month:
+                print(f"  ! londrakultur: unreadable date {spans[0]!r}", file=sys.stderr)
+                continue
+            start = dt.date(int(m.group(3)), month, int(m.group(1))).isoformat()
+            venue, address = (spans[1].split(" · ", 1) + [""])[:2] if len(spans) > 1 else ("", "")
+            # "Bankside, London SE1 9TG" -> area "Bankside"
+            area = address.split(",")[0].strip() if "," in address else ""
+            title = clean(re.sub(r"<[^>]+>", " ", link.group(2)))
+            text = clean(re.sub(r"<[^>]+>", " ", summary.group(1))) if summary else ""
+            note = spans[2] if len(spans) > 2 else ""
+            found.append({
+                "id": "lkk-" + link.group(1).rstrip("/").rsplit("/", 1)[-1],
+                "title": title,
+                "start": start,
+                "end": start,
+                "time": f"{int(m.group(4)):02d}:{m.group(5)}" if m.group(4) else "",
+                "endTime": "",
+                "venue": venue.strip(),
+                "area": area,
+                "address": address.strip(),
+                "online": False,
+                "category": categorize(f"{title} {text}"),
+                "summary": (f"{text} {note}".strip())[:280],
+                "url": link.group(1),
+                "source": "Londra Kültür Kulübü",
+            })
+    print(f"  {len(found)} event(s)")
+    return found
+
+
 POSTCODE = re.compile(r"\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b", re.I)
 
 
@@ -402,6 +469,9 @@ def main():
 
     print("Fixtures:")
     fixtures = scrape_fixtures()
+    print("Londra Kültür Kulübü:")
+    # Treated like fixtures: extra scraped sources that need geocoding by postcode.
+    fixtures += scrape_londrakultur()
 
     # data/excluded.json: ids or URLs of scraped events judged not Turkish enough.
     excluded_path = DATA / "excluded.json"
@@ -447,7 +517,7 @@ def main():
         "window.EVENTS_DATA = " + json.dumps(feed, ensure_ascii=False) + ";\n"
     )
     print(f"Wrote {len(merged)} events ({len(scraped) - len(fixtures)} from Eventbrite, "
-          f"{len(fixtures)} fixtures, {len(curated)} curated).")
+          f"{len(fixtures)} from fixtures and club sites, {len(curated)} curated).")
 
 
 if __name__ == "__main__":
