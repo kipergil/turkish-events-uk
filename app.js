@@ -24,7 +24,22 @@
     Business: "business", Festival: "festival", Community: "community", "Food & drink": "food",
     "Theatre & comedy": "comedy", "Faith & spiritual": "faith", "Official & embassy": "official", Sport: "sport", Culture: "culture",
   };
-  const dot = (cat) => `<span class="dot" style="--c: var(--c-${CAT_VAR[cat] || "culture"})" aria-hidden="true"></span>`;
+  // One colour per category, used for chips, rows, tiles, calendar entries and map pins alike.
+  const cvar = (cat) => `var(--c-${CAT_VAR[cat] || "culture"})`;
+  const dot = (cat) => `<span class="dot" style="--c: ${cvar(cat)}" aria-hidden="true"></span>`;
+
+  // Words for the results heading: "Parties this weekend", "Everything coming up".
+  const CAT_PHRASE = {
+    Music: "Music", Party: "Parties", Talk: "Talks", Workshop: "Workshops", Exhibition: "Exhibitions", Film: "Films",
+    Business: "Business events", Festival: "Festivals", Community: "Community events", "Food & drink": "Food and drink",
+    "Theatre & comedy": "Theatre and comedy", "Faith & spiritual": "Faith and spiritual gatherings",
+    "Official & embassy": "Official and embassy events", Sport: "Sport", Culture: "Cultural events",
+  };
+  const WHEN_PHRASE = {
+    any: "coming up", today: "today", tomorrow: "tomorrow", weekend: "this weekend",
+    week: "this week", nextweek: "next week", month: "this month",
+  };
+  const X_SVG = '<svg class="x" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 4.5l7 7m0-7l-7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 
   const state = { q: "", cat: "All", when: "any", view: "list", month: new Date(today.getFullYear(), today.getMonth(), 1), sel: todayIso };
 
@@ -81,7 +96,9 @@
     const base = filtered(["when"]);
     $("#when").innerHTML = WHEN.map((w) => {
       const n = w.range ? base.filter((e) => inRange(e, w.range().map(iso))).length : base.length;
-      return `<button class="chip" aria-pressed="${w.id === state.when}" data-when="${w.id}"${w.hint ? ` title="${w.hint}"` : ""}>${esc(w.label)}<span class="n">${n}</span></button>`;
+      const on = w.id === state.when;
+      const clearable = on && w.id !== "any";
+      return `<button class="chip${clearable ? " clearable" : ""}" aria-pressed="${on}" data-when="${w.id}"${w.hint && !clearable ? ` title="${w.hint}"` : ""}${clearable ? ` aria-label="${esc(w.label)}, ${n} events. Click to remove this filter"` : ""}>${esc(w.label)}<span class="n">${n}</span>${clearable ? X_SVG : ""}</button>`;
     }).join("");
   }
 
@@ -91,9 +108,12 @@
     base.forEach((e) => (counts[e.category] = (counts[e.category] || 0) + 1));
     const cats = ["All", ...Object.keys(counts).sort((a, b) => counts[b] - counts[a])];
     if (state.cat !== "All" && !counts[state.cat]) cats.push(state.cat); // keep the active chip visible at 0
-    $("#chips").innerHTML = cats.map((c) =>
-      `<button class="chip" aria-pressed="${c === state.cat}" data-cat="${esc(c)}">${c === "All" ? "All types" : dot(c) + esc(c)}<span class="n">${c === "All" ? base.length : counts[c] || 0}</span></button>`
-    ).join("");
+    $("#chips").innerHTML = cats.map((c) => {
+      const on = c === state.cat;
+      const clearable = on && c !== "All";
+      const n = c === "All" ? base.length : counts[c] || 0;
+      return `<button class="chip${clearable ? " clearable" : ""}" aria-pressed="${on}" data-cat="${esc(c)}"${c !== "All" ? ` style="--c: ${cvar(c)}"` : ""}${clearable ? ` aria-label="${esc(c)}, ${n} events. Click to remove this filter"` : ""}>${c === "All" ? "All types" : dot(c) + esc(c)}<span class="n">${n}</span>${clearable ? X_SVG : ""}</button>`;
+    }).join("");
   }
 
   // ---------- cards ----------
@@ -152,13 +172,13 @@
     const where = hasPlace(e)
       ? `<a href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener">${esc(place(e))}</a>`
       : esc(place(e));
-    return `<article class="row">
+    return `<article class="row" style="--c: ${cvar(e.category)}">
       <div class="time">${time}</div>
       <div class="ev-main">
         <h3 class="ev-title">${title}</h3>
         ${where ? `<div class="ev-where">${where}</div>` : ""}
         ${e.summary ? `<p class="ev-sum">${esc(e.summary)}</p>` : ""}
-        <div class="ev-tags"><span class="ev-tag">${dot(e.category)}${esc(e.category)}</span>${e.online ? '<span class="ev-tag plain">Online</span>' : ""}</div>
+        <div class="ev-tags"><span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>${e.online ? '<span class="ev-tag plain">Online</span>' : ""}</div>
       </div>
       ${actions(e)}
     </article>`;
@@ -168,10 +188,12 @@
   function tile(e) {
     const inner = `<span class="tile-until">${e.start > todayIso ? `From ${esc(fmtShort.format(parse(e.start)))} to` : "Until"} ${esc(fmtShort.format(parse(e.end)))}</span>
       <span class="tile-title">${esc(e.title)}</span>
-      <span class="tile-where">${esc(place(e))}</span>`;
+      <span class="tile-where">${esc(place(e))}</span>
+      <span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>`;
+    const style = `style="--c: ${cvar(e.category)}"`;
     return e.url
-      ? `<a class="tile" href="${esc(e.url)}" target="_blank" rel="noopener">${inner}</a>`
-      : `<div class="tile">${inner}</div>`;
+      ? `<a class="tile" ${style} href="${esc(e.url)}" target="_blank" rel="noopener">${inner}</a>`
+      : `<div class="tile" ${style}>${inner}</div>`;
   }
 
   function relLabel(dIso) {
@@ -211,14 +233,37 @@
     if (ongoing.length) {
       html += `<section class="strip" aria-labelledby="strip-title">
         <div class="strip-head">
-          <h2 class="section-title" id="strip-title">${from === todayIso ? "On now" : "Also running"}</h2>
-          <p class="section-note">Exhibitions and courses you can still catch</p>
+          <h2 class="section-title" id="strip-title">${esc(stripTitle(from))}</h2>
+          <p class="section-note">Already open, so you can drop in on any day they run</p>
         </div>
         <div class="tiles">${ongoing.map(tile).join("")}</div>
       </section>`;
     }
     for (const [d, evs] of groups) html += dayBlock(d, evs);
     $("#listView").innerHTML = html;
+  }
+
+  // "Exhibitions and courses on now", "Workshops running next week"
+  function stripTitle(from) {
+    const what = state.cat === "All" ? "Exhibitions and courses" : CAT_PHRASE[state.cat] || state.cat;
+    if (from === todayIso) return state.when === "any" ? `${what} on now` : `${what} on ${WHEN_PHRASE[state.when]}`;
+    return `${what} still running ${WHEN_PHRASE[state.when]}`;
+  }
+
+  // ---------- results heading ----------
+  const fmtDayMonth = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" });
+  function renderHeading(n) {
+    const what = state.cat === "All" ? "Everything" : CAT_PHRASE[state.cat] || state.cat;
+    const q = state.q.trim();
+    // "Parties this weekend", or with a search: "Events matching “galatasaray” next week"
+    $("#headline").textContent = q
+      ? `${what === "Everything" ? "Events" : what} matching “${q}”${state.when === "any" ? "" : " " + WHEN_PHRASE[state.when]}`
+      : `${what} ${WHEN_PHRASE[state.when]}`;
+    const r = whenRange(state.when);
+    const count = `${n} event${n === 1 ? "" : "s"}`;
+    let range = "in London, refreshed every morning";
+    if (r) range = r[0] === r[1] ? `on ${fmtDayMonth.format(parse(r[0]))}` : `from ${fmtDayMonth.format(parse(r[0]))} to ${fmtDayMonth.format(parse(r[1]))}`;
+    $("#subline").textContent = `${count} ${range}`;
   }
 
   function emptyMessage() {
@@ -251,9 +296,9 @@
       const shown = evs.slice(0, 3);
       html += `<button class="${cls}" data-day="${dIso}" aria-label="${esc(fmtLong.format(d))}: ${evs.length === 1 ? "1 event" : evs.length + " events"}">
         <span class="num">${d.getDate()}</span>
-        ${shown.map((e) => `<span class="ev" title="${esc(e.title)}">${e.time ? `<b>${esc(e.time)}</b> ` : ""}${esc(e.title)}</span>`).join("")}
+        ${shown.map((e) => `<span class="ev" style="--c: ${cvar(e.category)}" title="${esc(e.category)}: ${esc(e.title)}">${e.time ? `<b>${esc(e.time)}</b> ` : ""}${esc(e.title)}</span>`).join("")}
         ${evs.length > 3 ? `<span class="more">+${evs.length - 3} more</span>` : ""}
-        <span class="dots">${evs.slice(0, 4).map(() => "<i></i>").join("")}</span>
+        <span class="dots">${evs.slice(0, 4).map((e) => `<i style="--c: ${cvar(e.category)}"></i>`).join("")}</span>
       </button>`;
     }
     $("#calGrid").innerHTML = html;
@@ -290,6 +335,7 @@
     const v = evs[0];
     const items = evs.map((e) => `<div class="pop-ev">
         <div class="pop-when">${esc(whenText(e))}</div>
+        <div class="pop-cat">${dot(e.category)}${esc(e.category)}</div>
         <div class="pop-title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
         ${e.summary ? `<div class="pop-sum">${esc(e.summary.length > 140 ? e.summary.slice(0, 140) + "…" : e.summary)}</div>` : ""}
         <div class="pop-actions">
@@ -332,12 +378,16 @@
     const markers = [];
     for (const evs of byVenue.values()) {
       evs.sort((a, b) => spanDays(a) - spanDays(b) || a.start.localeCompare(b.start) || (a.time || "").localeCompare(b.time || ""));
-      const allLong = evs.every((e) => spanDays(e) >= 2);
+      // Pin colour = the venue's most common category (ties go to the soonest event).
+      const tally = new Map();
+      evs.forEach((e) => tally.set(e.category, (tally.get(e.category) || 0) + 1));
+      const cat = [...tally.entries()].sort((a, b) => b[1] - a[1])[0][0];
       const icon = L.divIcon({
         className: "", iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -28],
-        html: `<div class="pin${allLong ? " long" : ""}"><span>${evs.length > 1 ? evs.length : ""}</span></div>`,
+        html: `<div class="pin" style="--c: ${cvar(cat)}"><span>${evs.length > 1 ? evs.length : ""}</span></div>`,
       });
-      const m = L.marker([evs[0].lat, evs[0].lng], { icon, title: evs[0].venue || evs[0].title, riseOnHover: true, eventCount: evs.length })
+      const label = `${evs[0].venue || evs[0].title}: ${tally.size === 1 ? cat : [...tally.keys()].join(", ")}`;
+      const m = L.marker([evs[0].lat, evs[0].lng], { icon, title: label, alt: label, riseOnHover: true, eventCount: evs.length })
         .bindPopup(popupHtml(evs), { maxWidth: 320, autoPanPadding: [20, 20] });
       markers.push(m);
     }
@@ -360,8 +410,7 @@
     $("#listView").hidden = state.view !== "list";
     $("#calView").hidden = state.view !== "calendar";
     $("#mapView").hidden = state.view !== "map";
-    const n = visible().length;
-    $("#status").textContent = `${n} event${n === 1 ? "" : "s"} shown`;
+    renderHeading(visible().length);
     if (state.view === "list") renderList();
     else if (state.view === "calendar") renderCalendar();
     else renderMap();
@@ -392,8 +441,16 @@
   }
 
   $("#q").addEventListener("input", (e) => { state.q = e.target.value; render(); });
-  $("#chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) { state.cat = b.dataset.cat; syncUrl(); render(); } });
-  $("#when").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) setWhen(b.dataset.when); });
+  // Clicking the selected filter again clears it (back to all types / any time).
+  $("#chips").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    state.cat = b.dataset.cat === state.cat ? "All" : b.dataset.cat;
+    syncUrl(); render();
+  });
+  $("#when").addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    setWhen(b.dataset.when === state.when ? "any" : b.dataset.when);
+  });
   $("#listView").addEventListener("click", (e) => { const b = e.target.closest("[data-when]"); if (b) setWhen(b.dataset.when); });
   document.querySelector(".seg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setView(b.dataset.view); });
   $("#prevMonth").addEventListener("click", () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); render(); });
