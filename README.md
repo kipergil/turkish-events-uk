@@ -1,6 +1,6 @@
-# Turkish Events in London: the Daily Feed
+# Turkish Events UK: the Daily Feed
 
-The daily feed of Turkish events in London, refreshed every morning. It covers concerts and club nights, meyhane, talks and workshops, film and theatre, football matches and screenings and other sport, festivals, exhibitions, faith, embassy and community events. It has list, calendar and map views, and the same category colours run through filters, events, calendar entries and map pins.
+The daily feed of Turkish events across the UK, currently covering London, refreshed every morning. It covers concerts and club nights, meyhane, talks and workshops, film and theatre, football matches and screenings and other sport, festivals, exhibitions, faith, embassy and community events. It has list, calendar and map views, and the same category colours run through filters, events, calendar entries and map pins.
 
 - **List view:** events grouped by day. Exhibitions and courses that are already running sit under "On now". Each event has a link to its page and a "+ Calendar" (Google Calendar) button.
 - **Calendar view:** month grid starting on Monday. Click a day to see its events. On phones, days show dots instead of titles.

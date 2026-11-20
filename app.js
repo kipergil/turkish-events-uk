@@ -159,7 +159,7 @@
 
   // Outbound event links carry the two UTM tags analytics tools need to credit the visit to us:
   // utm_source (who sent it) and utm_medium (what kind of link). Calendar/Maps links stay untagged.
-  const UTM = { utm_source: "turkish-events-london", utm_medium: "referral" };
+  const UTM = { utm_source: "turkish-events-uk", utm_medium: "referral" };
   function eventUrl(raw) {
     try {
       const u = new URL(raw);
