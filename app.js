@@ -155,8 +155,12 @@
 
   const place = (e) => (e.online ? "Online" : [e.venue, e.area].filter(Boolean).join(", "));
 
+  const EXT_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g></svg>';
+
+  // "View event" opens the organiser's own page, which is the place to confirm details and buy tickets.
   function actions(e) {
     return `<div class="ev-actions">
+      ${e.url ? `<a class="view-btn" href="${esc(e.url)}" target="_blank" rel="noopener" aria-label="View event: ${esc(e.title)} (opens the organiser's page)">View event${EXT_SVG}</a>` : ""}
       <a class="icon-btn" href="${esc(gcalLink(e))}" target="_blank" rel="noopener" title="Add to Google Calendar" aria-label="Add ${esc(e.title)} to Google Calendar">${CAL_SVG}</a>
       ${hasPlace(e) ? `<a class="icon-btn" href="${esc(gmapsUrl(e))}" target="_blank" rel="noopener" title="Open venue in Google Maps" aria-label="Open ${esc(e.venue || "venue")} in Google Maps">${MAP_SVG}</a>` : ""}
     </div>`;
@@ -189,7 +193,7 @@
     const inner = `<span class="tile-until">${e.start > todayIso ? `From ${esc(fmtShort.format(parse(e.start)))} to` : "Until"} ${esc(fmtShort.format(parse(e.end)))}</span>
       <span class="tile-title">${esc(e.title)}</span>
       <span class="tile-where">${esc(place(e))}</span>
-      <span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>`;
+      <span class="tile-foot"><span class="ev-tag cat">${dot(e.category)}${esc(e.category)}</span>${e.url ? `<span class="tile-view">View event${EXT_SVG}</span>` : ""}</span>`;
     const style = `style="--c: ${cvar(e.category)}"`;
     return e.url
       ? `<a class="tile" ${style} href="${esc(e.url)}" target="_blank" rel="noopener">${inner}</a>`
@@ -339,7 +343,7 @@
         <div class="pop-title">${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.title)}</a>` : esc(e.title)}</div>
         ${e.summary ? `<div class="pop-sum">${esc(e.summary.length > 140 ? e.summary.slice(0, 140) + "…" : e.summary)}</div>` : ""}
         <div class="pop-actions">
-          ${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">Event page</a>` : ""}
+          ${e.url ? `<a href="${esc(e.url)}" target="_blank" rel="noopener">View event</a>` : ""}
           <a href="${esc(gcalLink(e))}" target="_blank" rel="noopener">Add to calendar</a>
         </div>
       </div>`).join("");

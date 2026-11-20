@@ -218,7 +218,7 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 }
 .tile:hover .tile-title { text-decoration: underline; text-underline-offset: 3px; }
 .tile-until { color: color-mix(in srgb, var(--c, var(--turquoise)) 70%, var(--ink)); font-weight: 650; font-size: .875rem; }
-.tile .ev-tag { margin-top: 2px; font-size: .8125rem; align-self: flex-start; }
+.tile .ev-tag { font-size: .8125rem; }
 .tile-title { font-weight: 680; font-size: 1.0625rem; line-height: 1.25; }
 .tile-where { color: var(--muted); font-size: .875rem; margin-top: auto; }
 
@@ -265,7 +265,18 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 .ev-tag { display: inline-flex; align-items: center; gap: 6px; font-weight: 550; color: var(--ink); }
 .ev-tag.plain { color: var(--muted); font-weight: 450; }
 .ev-tag.cat { padding: 2px 9px 2px 7px; border-radius: 999px; background: color-mix(in srgb, var(--c, var(--c-culture)) 14%, transparent); }
-.ev-actions { display: flex; gap: 4px; }
+.ev-actions { display: flex; gap: 4px; align-items: center; }
+.view-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; margin-right: 4px;
+  border-radius: 10px; background: var(--cobalt); color: #fff; text-decoration: none;
+  font-weight: 650; font-size: .875rem; white-space: nowrap;
+}
+.view-btn svg { width: 15px; height: 15px; }
+.view-btn:hover { background: color-mix(in srgb, var(--cobalt) 86%, #000); }
+@media (prefers-color-scheme: dark) { .view-btn { color: #0F1730; } .view-btn:hover { background: color-mix(in srgb, var(--cobalt) 86%, #fff); } }
+.tile-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.tile-view { display: inline-flex; align-items: center; gap: 5px; font-size: .8125rem; font-weight: 650; color: var(--cobalt); white-space: nowrap; }
+.tile-view svg { width: 13px; height: 13px; }
 .icon-btn {
   display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 10px;
   border: 1px solid transparent; background: transparent; color: var(--muted); cursor: pointer; text-decoration: none;
@@ -383,7 +394,7 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
   .date-month { color: var(--muted); }
   .rel { margin: 0 0 0 auto; }
   .row { grid-template-columns: 54px 1fr; gap: 12px; padding: 14px; }
-  .ev-actions { grid-column: 2; margin: 2px 0 0 -10px; }
+  .ev-actions { grid-column: 2; margin: 4px 0 0; }
   .cell { min-height: 56px; align-items: center; padding: 4px 2px; }
   .cell .ev, .cell .more { display: none; }
   .cell .dots { display: flex; }
