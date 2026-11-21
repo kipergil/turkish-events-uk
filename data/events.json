@@ -1,25 +1,7 @@
 {
- "updated": "2026-11-20T15:20+00:00",
+ "updated": "2026-11-21T06:55+00:00",
  "count": 56,
  "events": [
-  {
-   "id": "eb-2003198664129",
-   "title": "Plaster Carving: Ornamented Ottoman Windows with Stained Glass",
-   "start": "2026-10-11",
-   "end": "2026-11-29",
-   "time": "15:00",
-   "endTime": "18:00",
-   "venue": "Yunus Emre Enstitüsü - London",
-   "area": "Euston",
-   "address": "10 Maple Street, W1T 5HA",
-   "online": false,
-   "lat": 51.522792,
-   "lng": -0.13749,
-   "category": "Workshop",
-   "summary": "Discover this 8 week intermediate plaster carving course!",
-   "url": "https://www.eventbrite.co.uk/e/2003198664129",
-   "source": "Eventbrite"
-  },
   {
    "id": "eb-2003142680681",
    "title": "Paper Marbling (Ebru) Course | In Person | Beginner",
@@ -73,24 +55,6 @@
    "online": false,
    "lat": 51.51438,
    "lng": -0.142532
-  },
-  {
-   "id": "eb-2004512987305",
-   "title": "Listening Club: Lullabies – Songs of Childhood, Memory and Belonging",
-   "start": "2026-11-20",
-   "end": "2026-11-20",
-   "time": "18:00",
-   "endTime": "20:00",
-   "venue": "Yunus Emre Enstitüsü - London",
-   "area": "Euston",
-   "address": "10 Maple Street, W1T 5HA",
-   "online": false,
-   "lat": 51.522792,
-   "lng": -0.13749,
-   "category": "Party",
-   "summary": "A special World Children's Day edition with Prof. Dr Mine Doğantan-Dack",
-   "url": "https://www.eventbrite.co.uk/e/2004512987305",
-   "source": "Eventbrite"
   },
   {
    "id": "eb-2003611338449",
@@ -398,6 +362,24 @@
    "lng": -0.105886
   },
   {
+   "id": "eb-1999849391364",
+   "title": "TURKEN ISLAMIC TALKS",
+   "start": "2026-11-26",
+   "end": "2026-11-26",
+   "time": "19:00",
+   "endTime": "20:30",
+   "venue": "TURKEN UK",
+   "area": "St. Giles's",
+   "address": "Ruskin House, WC1A 1LT",
+   "online": false,
+   "lat": 51.517859,
+   "lng": -0.125515,
+   "category": "Talk",
+   "summary": "Join us for a new fortnightly series with Ustadh Yaqub Muslim, exploring selected short sūrahs, Qur’anic passages, and foundational hadiths.",
+   "url": "https://www.eventbrite.co.uk/e/1999849391364",
+   "source": "Eventbrite"
+  },
+  {
    "id": "eb-2004395816845",
    "title": "Retro Turkish Night London | 90’lar & 2000’ler Türkçe Pop + Turkish Afro Ho",
    "start": "2026-11-27",
@@ -522,6 +504,24 @@
    "source": "t-vine.com / Dear Turkey",
    "lat": 51.571963,
    "lng": -0.096264
+  },
+  {
+   "id": "eb-2003858145656",
+   "title": "Queer Meyhane",
+   "start": "2026-11-28",
+   "end": "2026-11-28",
+   "time": "19:30",
+   "endTime": "23:00",
+   "venue": "Ishtar",
+   "area": "Marylebone",
+   "address": "10-12 Crawford Street, W1U 6AZ",
+   "online": false,
+   "lat": 51.520111,
+   "lng": -0.158257,
+   "category": "Party",
+   "summary": "Queer Meyhane",
+   "url": "https://www.eventbrite.co.uk/e/2003858145656",
+   "source": "Eventbrite"
   },
   {
    "id": "eb-2004943122852",
