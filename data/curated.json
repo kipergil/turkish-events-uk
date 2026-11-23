@@ -43,21 +43,6 @@
     "source": "Yunus Emre Institute"
   },
   {
-    "id": "bonbon-turkish-club-night",
-    "title": "Turkish Club Night x Jeff Redd",
-    "start": "2026-11-21",
-    "end": "2026-11-22",
-    "time": "22:30",
-    "endTime": "04:00",
-    "venue": "Bonbon Club",
-    "area": "",
-    "address": "",
-    "category": "Party",
-    "summary": "Turkish club night with Jeff Redd.",
-    "url": "https://www.eventbrite.co.uk/e/turkish-club-night-x-jeff-redd-tickets-2002965105549",
-    "source": "Eventbrite"
-  },
-  {
     "id": "ats-yassiada",
     "title": "Revisiting Yassıada: Recent Research on an Early Byzantine Shipwreck",
     "start": "2026-12-01",
@@ -205,22 +190,6 @@
     "source": "t-vine.com / Dear Turkey"
   },
   {
-    "id": "burhan-ocal-botvinov-sss-2026",
-    "title": "Burhan Öçal & Alexey Botvinov: Classics Reloaded",
-    "start": "2026-11-22",
-    "end": "2026-11-22",
-    "time": "16:00",
-    "endTime": "",
-    "venue": "Sinfonia Smith Square",
-    "online": false,
-    "area": "Westminster",
-    "address": "Smith Square, London SW1P 3HA",
-    "category": "Music",
-    "summary": "Darbuka master Burhan Öçal and pianist Alexey Botvinov reimagine three centuries of keyboard music in a London premiere.",
-    "url": "https://dearturkey.com/events/burhan-al-alexey-botvinov-classics-reloaded",
-    "source": "Dear Turkey"
-  },
-  {
     "id": "fenerbahce-london-yilmaz-vural-breakfast",
     "title": "Yılmaz Vural ile Maç Günü Kahvaltısı",
     "start": "2026-11-25",
@@ -299,5 +268,21 @@
     "summary": "Turkish pop singer Murat Dalkılıç plays a live show at indigo at The O2. Tickets are sold by AXS.",
     "url": "https://www.ents24.com/london-events/indigo-at-the-o2/murat-dalkilic/7521550",
     "source": "Ents24"
+  },
+  {
+    "id": "abanbar-karamustafa-2026",
+    "title": "Gülsün Karamustafa: Remains of a Forgotten Promise",
+    "start": "2026-10-08",
+    "end": "2026-12-12",
+    "time": "",
+    "endTime": "",
+    "venue": "Ab-Anbar",
+    "online": false,
+    "area": "Fitzrovia",
+    "address": "34 Mortimer Street, London W1W 7JS",
+    "category": "Exhibition",
+    "summary": "First major UK solo exhibition of Turkish artist Gülsün Karamustafa, spanning five decades of work on memory, migration and the unfulfilled promises of authority. Open Tue–Fri 11am–6pm, Sat 12–6pm.",
+    "url": "https://www.galleriesnow.net/shows/gulsun-karamustafa/",
+    "source": "Galleries Now"
   }
 ]
