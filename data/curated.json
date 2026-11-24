@@ -30,19 +30,6 @@
     "source": "Cornucopia"
   },
   {
-    "id": "yee-rhythms-of-the-divine",
-    "title": "Rhythms of the Divine: Mevlevi Sema Ceremony & Turkish Sufi Music Concert",
-    "start": "2026-11-23",
-    "time": "19:00",
-    "venue": "Sadler's Wells Theatre",
-    "area": "Islington",
-    "address": "Rosebery Avenue, EC1R 4TN",
-    "category": "Music",
-    "summary": "Whirling dervish sema ceremony with live Turkish Sufi music, presented by the Yunus Emre Institute London.",
-    "url": "https://yeelondon.org.uk/",
-    "source": "Yunus Emre Institute"
-  },
-  {
     "id": "ats-yassiada",
     "title": "Revisiting Yassıada: Recent Research on an Early Byzantine Shipwreck",
     "start": "2026-12-01",
@@ -284,5 +271,36 @@
     "summary": "First major UK solo exhibition of Turkish artist Gülsün Karamustafa, spanning five decades of work on memory, migration and the unfulfilled promises of authority. Open Tue–Fri 11am–6pm, Sat 12–6pm.",
     "url": "https://www.galleriesnow.net/shows/gulsun-karamustafa/",
     "source": "Galleries Now"
+  },
+  {
+    "id": "lse-ottoman-british-archives-2027",
+    "title": "Researching the Middle East in the British and Ottoman Archives: Approaches and Challenges",
+    "start": "2027-01-13",
+    "end": "2027-01-13",
+    "time": "18:00",
+    "endTime": "19:30",
+    "venue": "Marshall Building, LSE (MAR.1.08)",
+    "online": false,
+    "area": "Holborn",
+    "address": "Houghton Street, WC2A 2AE",
+    "category": "Talk",
+    "summary": "Panel with Dr Ali Açıkgöz, Dr Orçun Can Okan and Dr Hande Yalnızoğlu Altınay on using British and Ottoman archives to study Türkiye and the Middle East, chaired by Prof Yaprak Gürsoy. In person and online.",
+    "url": "https://www.lse.ac.uk/contemporary-turkish-studies/upcoming-events/researching-the-middle-east-in-the-british-and-ottoman-archives-approaches-and-challenges",
+    "source": "LSE Contemporary Turkish Studies"
+  },
+  {
+    "id": "fusion-of-sounds-beauchamp-dec5",
+    "title": "A Fusion of Sounds: Knightsbridge",
+    "start": "2026-12-05",
+    "end": "2026-12-05",
+    "time": "19:30",
+    "venue": "The Beauchamp",
+    "online": false,
+    "area": "Knightsbridge",
+    "address": "43-44 Beauchamp Place, SW3 1NX",
+    "category": "Party",
+    "summary": "Social night with live vocals, violin, percussion and a DJ set, run in English and Turkish. Tickets from £15.",
+    "url": "https://dearturkey.com/events/a-fusion-of-sounds",
+    "source": "Dear Turkey"
   }
 ]
