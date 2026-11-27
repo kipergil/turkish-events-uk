@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T06:57+00:00",
+ "updated": "2026-11-27T06:51+00:00",
  "count": 50,
  "events": [
   {
@@ -93,60 +93,6 @@
    "lng": -0.142532
   },
   {
-   "id": "eb-2004588518220",
-   "title": "National Gallery Tour: Paintings from Medieval to Renaissance ( Turkish)",
-   "start": "2026-11-26",
-   "end": "2026-11-26",
-   "time": "14:00",
-   "endTime": "16:00",
-   "venue": "Sainsbury Wing",
-   "area": "Charing Cross",
-   "address": "12 Saint Martin's Street, SW1Y 5BS",
-   "online": false,
-   "lat": 51.508846,
-   "lng": -0.129757,
-   "category": "Exhibition",
-   "summary": "How to Read Paintings from the Medieval to Renaissance Period",
-   "url": "https://www.eventbrite.co.uk/e/2004588518220",
-   "source": "Eventbrite"
-  },
-  {
-   "id": "eb-2005413096556",
-   "title": "Floral Ebru (Papermarbling) Art Workshop - Art on the Water",
-   "start": "2026-11-26",
-   "end": "2026-11-26",
-   "time": "18:15",
-   "endTime": "19:30",
-   "venue": "TTA (Traditional Turkish Arts Platform)",
-   "area": "Lower Holloway",
-   "address": "North Road, N7 9DP",
-   "online": false,
-   "lat": 51.549409,
-   "lng": -0.119711,
-   "category": "Workshop",
-   "summary": "Make your own original artwork of floral motifs, carnations, and tulips. Take pleasure in the magnificence of creating art on the water.",
-   "url": "https://www.eventbrite.co.uk/e/2005413096556",
-   "source": "Eventbrite"
-  },
-  {
-   "id": "eb-1999849391364",
-   "title": "TURKEN ISLAMIC TALKS",
-   "start": "2026-11-26",
-   "end": "2026-11-26",
-   "time": "19:00",
-   "endTime": "20:30",
-   "venue": "TURKEN UK",
-   "area": "St. Giles's",
-   "address": "Ruskin House, WC1A 1LT",
-   "online": false,
-   "lat": 51.517859,
-   "lng": -0.125515,
-   "category": "Talk",
-   "summary": "Join us for a new fortnightly series with Ustadh Yaqub Muslim, exploring selected short sūrahs, Qur’anic passages, and foundational hadiths.",
-   "url": "https://www.eventbrite.co.uk/e/1999849391364",
-   "source": "Eventbrite"
-  },
-  {
    "id": "eb-2005126428123",
    "title": "Make Your Own Christmas Crackers with on the Water",
    "start": "2026-11-27",
@@ -162,6 +108,24 @@
    "category": "Workshop",
    "summary": "Create your own Christmas crackers with Ebru art! Explore colours, paint on water, and take home unique handmade festive decorations.",
    "url": "https://www.eventbrite.co.uk/e/2005126428123",
+   "source": "Eventbrite"
+  },
+  {
+   "id": "eb-2004588581409",
+   "title": "National Gallery Tour: Paintings from Medieval to Renaissance ( Turkish)",
+   "start": "2026-11-27",
+   "end": "2026-11-27",
+   "time": "19:00",
+   "endTime": "21:00",
+   "venue": "Sainsbury Wing",
+   "area": "Charing Cross",
+   "address": "12 Saint Martin's Street, SW1Y 5BS",
+   "online": false,
+   "lat": 51.508846,
+   "lng": -0.129757,
+   "category": "Exhibition",
+   "summary": "How to Read Paintings from the Medieval to Renaissance Period",
+   "url": "https://www.eventbrite.co.uk/e/2004588581409",
    "source": "Eventbrite"
   },
   {
@@ -363,6 +327,24 @@
    "source": "Eventbrite"
   },
   {
+   "id": "eb-2005500955344",
+   "title": "Floral Ebru (Papermarbling) Art Workshop - Art on the Water",
+   "start": "2026-11-29",
+   "end": "2026-11-29",
+   "time": "11:30",
+   "endTime": "12:45",
+   "venue": "TTA (Traditional Turkish Arts Platform)",
+   "area": "Lower Holloway",
+   "address": "North Road, N7 9DP",
+   "online": false,
+   "lat": 51.549409,
+   "lng": -0.119711,
+   "category": "Workshop",
+   "summary": "Make your own original artwork of floral motifs, carnations, and tulips. Take pleasure in the magnificence of creating art on the water.",
+   "url": "https://www.eventbrite.co.uk/e/2005500955344",
+   "source": "Eventbrite"
+  },
+  {
    "id": "edis-outernet-2026",
    "title": "Edis: UK & Europe Tour 2026",
    "start": "2026-11-29",
@@ -482,6 +464,24 @@
    "online": false,
    "lat": 51.520957,
    "lng": -0.153565
+  },
+  {
+   "id": "eb-2005463694897",
+   "title": "TURKEN ISLAMIC TALKS",
+   "start": "2026-12-04",
+   "end": "2026-12-04",
+   "time": "19:00",
+   "endTime": "20:30",
+   "venue": "TURKEN UK",
+   "area": "St. Giles's",
+   "address": "Ruskin House, WC1A 1LT",
+   "online": false,
+   "lat": 51.517859,
+   "lng": -0.125515,
+   "category": "Talk",
+   "summary": "Join us for a new fortnightly series with Ustadh Yaqub Muslim, exploring selected short sūrahs, Qur’anic passages, and foundational hadiths.",
+   "url": "https://www.eventbrite.co.uk/e/2005463694897",
+   "source": "Eventbrite"
   },
   {
    "id": "fusion-of-sounds-beauchamp-dec5",
