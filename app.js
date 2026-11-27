@@ -271,6 +271,7 @@
 
   function renderList() {
     const list = visible();
+    parkSupportCard();
     if (!list.length) { $("#listView").innerHTML = emptyMessage(); return; }
     const r = whenRange(state.when);
     const from = r && r[0] > todayIso ? r[0] : todayIso;
@@ -279,7 +280,12 @@
     const groups = new Map();
     rest.forEach((e) => { if (!groups.has(e.start)) groups.set(e.start, []); groups.get(e.start).push(e); });
     let html = "";
-    for (const [d, evs] of groups) html += dayBlock(d, evs);
+    let day = 0;
+    for (const [d, evs] of groups) {
+      html += dayBlock(d, evs);
+      // The support box sits in the feed after the third day, where people are already scrolling.
+      if (++day === 3) html += '<div id="supportSlot"></div>';
+    }
     // Running exhibitions and courses go last, after the dated events.
     if (ongoing.length) {
       html += `<section class="strip" aria-labelledby="strip-title">
@@ -291,6 +297,15 @@
       </section>`;
     }
     $("#listView").innerHTML = html;
+    const slot = $("#supportSlot");
+    if (slot) slot.replaceWith($("#supportCard"));
+  }
+
+  // The support box lives at the end of <main>; the list view borrows it (see renderList).
+  // Put it back before the list is redrawn, and for the calendar and map views.
+  function parkSupportCard() {
+    const card = $("#supportCard"), main = $("#results");
+    if (card && card.parentElement !== main) main.appendChild(card);
   }
 
   // "Exhibitions and courses on now", "Workshops running next week"
@@ -481,6 +496,7 @@
     $("#calView").hidden = state.view !== "calendar";
     $("#mapView").hidden = state.view !== "map";
     renderHeading(visible().length);
+    if (state.view !== "list") parkSupportCard();
     if (state.view === "list") renderList();
     else if (state.view === "calendar") renderCalendar();
     else renderMap();
