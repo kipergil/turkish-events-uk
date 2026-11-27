@@ -467,18 +467,47 @@ main { padding-top: 8px; padding-bottom: 48px; outline: none; }
 }
 
 /* ---------- Footer ---------- */
-/* end-of-results note asking for support */
+/* support box: the cobalt tile band again, so it reads as part of the site, not an ad */
 .support-card {
-  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin: 40px 0 8px; padding: 20px 22px; border-radius: var(--radius-sheet);
-  background: var(--sheet); border: 1px solid var(--line);
+  position: relative; overflow: hidden; isolation: isolate;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px 22px;
+  margin: 32px 0; padding: 26px 28px; border-radius: 18px;
+  background: var(--masthead); color: #fff;
+  box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--masthead) 70%, transparent);
 }
-.support-card h2 { margin: 0 0 4px; font-size: 1.125rem; font-weight: 700; letter-spacing: -.01em; }
-.support-card p { margin: 0; color: var(--muted); max-width: 60ch; }
+.support-card .lattice { z-index: -1; opacity: .14; }
+.support-icon {
+  display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .3);
+}
+.support-icon svg { width: 28px; height: 28px; }
+.support-text h2 { margin: 0 0 6px; font-size: clamp(1.25rem, 2.6vw, 1.5rem); font-weight: 740; letter-spacing: -.015em; line-height: 1.2; }
+.support-text p { margin: 0; max-width: 60ch; line-height: 1.5; opacity: .94; }
+.support-text .support-small { margin-top: 6px; font-size: .875rem; opacity: .8; }
+.support-cta {
+  display: inline-flex; align-items: center; gap: 8px; height: 50px; padding: 0 22px; white-space: nowrap;
+  border-radius: 12px; background: #fff; color: var(--masthead); text-decoration: none;
+  font-weight: 750; font-size: 1.0625rem; box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.support-cta svg { width: 20px; height: 20px; }
+.support-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0, 0, 0, .24); }
+.support-cta:focus-visible { outline-color: #fff; outline-offset: 3px; }
+#listView .support-card { margin: 28px 0 0; }
+@media (max-width: 759px) {
+  .support-card { grid-template-columns: auto 1fr; padding: 22px 20px; gap: 14px 16px; }
+  .support-icon { width: 46px; height: 46px; align-self: start; }
+  .support-icon svg { width: 24px; height: 24px; }
+  .support-cta { grid-column: 1 / -1; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .support-cta { transition: none; } .support-cta:hover { transform: none; } }
+
+/* the About page's support button */
 .support-btn {
   display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; flex: none;
   border-radius: 10px; background: var(--cobalt); color: #fff !important; text-decoration: none; font-weight: 650; font-size: .9375rem;
 }
+.support-btn svg { width: 16px; height: 16px; flex: none; }
 .support-btn:hover { background: color-mix(in srgb, var(--cobalt) 86%, #000); }
 @media (prefers-color-scheme: dark) { .support-btn, .support-btn:hover { color: #0F1730 !important; } .support-btn:hover { background: color-mix(in srgb, var(--cobalt) 86%, #fff); } }
 .foot-links { display: flex; flex-wrap: wrap; gap: 6px 20px; }
