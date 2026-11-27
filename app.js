@@ -283,8 +283,8 @@
     let day = 0;
     for (const [d, evs] of groups) {
       html += dayBlock(d, evs);
-      // The support box sits in the feed after the third day, where people are already scrolling.
-      if (++day === 3) html += '<div id="supportSlot"></div>';
+      // The support box sits in the feed right after the first day of events.
+      if (++day === 1) html += '<div id="supportSlot"></div>';
     }
     // Running exhibitions and courses go last, after the dated events.
     if (ongoing.length) {
