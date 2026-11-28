@@ -121,6 +121,7 @@ Rules:
 - Only list events that the public can attend, by ticket, registration or free entry. Skip invitation-only receptions.
 - `lat`/`lng` are optional. Include the postcode in `address` and the script looks it up on postcodes.io, or reuses the location of an Eventbrite event at the same venue. Only set `lat`/`lng` yourself for a venue with no postcode, and only if you've checked them.
 - Remove curated events that ended before today.
+- If an event lands in the wrong category, add a rule to `data/overrides.json` (`{"title": "<regex>", "category": "Talk"}` or `{"id": "eb-…", "category": "…"}`) rather than editing the generated feed.
 - If an Eventbrite result is not really Turkish-related (the word only appears in passing, or "turkey" means the bird), add its `id` to `data/excluded.json`.
 
 ## 3. Rebuild, check, publish
