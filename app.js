@@ -271,7 +271,6 @@
 
   function renderList() {
     const list = visible();
-    parkSupportCard();
     if (!list.length) { $("#listView").innerHTML = emptyMessage(); return; }
     const r = whenRange(state.when);
     const from = r && r[0] > todayIso ? r[0] : todayIso;
@@ -280,11 +279,13 @@
     const groups = new Map();
     rest.forEach((e) => { if (!groups.has(e.start)) groups.set(e.start, []); groups.get(e.start).push(e); });
     let html = "";
+    // A second support box sits in the feed after the first day, but only when more events
+    // follow it; otherwise the one at the end of the page would be right next to it.
+    const moreAfterFirstDay = groups.size > 1 || ongoing.length > 0;
     let day = 0;
     for (const [d, evs] of groups) {
       html += dayBlock(d, evs);
-      // The support box sits in the feed right after the first day of events.
-      if (++day === 1) html += '<div id="supportSlot"></div>';
+      if (++day === 1 && moreAfterFirstDay) html += '<div id="supportSlot"></div>';
     }
     // Running exhibitions and courses go last, after the dated events.
     if (ongoing.length) {
@@ -298,14 +299,17 @@
     }
     $("#listView").innerHTML = html;
     const slot = $("#supportSlot");
-    if (slot) slot.replaceWith($("#supportCard"));
+    if (slot) slot.replaceWith(inlineSupportCard());
   }
 
-  // The support box lives at the end of <main>; the list view borrows it (see renderList).
-  // Put it back before the list is redrawn, and for the calendar and map views.
-  function parkSupportCard() {
-    const card = $("#supportCard"), main = $("#results");
-    if (card && card.parentElement !== main) main.appendChild(card);
+  // The main support box stays at the end of <main>, after all events, in every view.
+  // The in-feed copy is a clone with its own ids.
+  function inlineSupportCard() {
+    const card = $("#supportCard").cloneNode(true);
+    card.id = "supportCardInline";
+    card.querySelector("h2").id = "supportTitleInline";
+    card.setAttribute("aria-labelledby", "supportTitleInline");
+    return card;
   }
 
   // "Exhibitions and courses on now", "Workshops running next week"
@@ -496,7 +500,6 @@
     $("#calView").hidden = state.view !== "calendar";
     $("#mapView").hidden = state.view !== "map";
     renderHeading(visible().length);
-    if (state.view !== "list") parkSupportCard();
     if (state.view === "list") renderList();
     else if (state.view === "calendar") renderCalendar();
     else renderMap();
