@@ -458,6 +458,23 @@ def norm_title(t):
     return re.sub(r"[^a-z0-9ğüşöçı]+", "", t.lower())[:40]
 
 
+def apply_category_overrides(events):
+    """data/overrides.json fixes categories the automatic rules get wrong, e.g. an organiser
+    filing a talk series as a party. Each rule: {"title": "<regex>", "category": "<name>"}
+    and/or {"id": "<event id>", ...}; the first matching rule wins."""
+    path = DATA / "overrides.json"
+    if not path.exists():
+        return
+    rules = json.loads(path.read_text())
+    for ev in events:
+        for rule in rules:
+            by_id = rule.get("id") and rule["id"] == ev.get("id")
+            by_title = rule.get("title") and re.search(rule["title"], ev.get("title", ""), re.I)
+            if by_id or by_title:
+                ev["category"] = rule["category"]
+                break
+
+
 def main():
     today = dt.datetime.now(LONDON).date().isoformat()
     print("Eventbrite:")
@@ -489,6 +506,8 @@ def main():
     # Fixtures have a postcode but no coordinates, so geocode them like curated events.
     add_coordinates(curated + fixtures, scraped)
     scraped = scraped + fixtures
+
+    apply_category_overrides(curated + scraped)
 
     # Curated first so hand-checked details win over scraped duplicates.
     merged, seen_keys = [], set()
